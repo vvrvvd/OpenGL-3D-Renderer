@@ -1,0 +1,4 @@
+﻿  main.cpp
+c:\users\dell\desktop\openglroot\opengl first\opengl first\main.cpp(67): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\dell\desktop\openglroot\opengl first\opengl first\main.cpp(188): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  OpenGL First.vcxproj -> C:\Users\Dell\Desktop\OpenGLRoot\OpenGL First\Debug\OpenGL First.exe
