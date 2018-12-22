@@ -1,0 +1,19 @@
+﻿  glad.c
+  main.cpp
+c:\users\dell\documents\learnopengl\opengl first\main.cpp(67): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\dell\documents\learnopengl\opengl first\main.cpp(188): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+main.obj : error LNK2019: unresolved external symbol glfwInit referenced in function "void __cdecl init_glfw(void)" (?init_glfw@@YAXXZ)
+main.obj : error LNK2019: unresolved external symbol glfwTerminate referenced in function main
+main.obj : error LNK2019: unresolved external symbol glfwWindowHint referenced in function "void __cdecl init_glfw(void)" (?init_glfw@@YAXXZ)
+main.obj : error LNK2019: unresolved external symbol glfwCreateWindow referenced in function main
+main.obj : error LNK2019: unresolved external symbol glfwWindowShouldClose referenced in function main
+main.obj : error LNK2019: unresolved external symbol glfwSetWindowShouldClose referenced in function "void __cdecl process_input(struct GLFWwindow *)" (?process_input@@YAXPEAUGLFWwindow@@@Z)
+main.obj : error LNK2019: unresolved external symbol glfwSetFramebufferSizeCallback referenced in function main
+main.obj : error LNK2019: unresolved external symbol glfwPollEvents referenced in function main
+main.obj : error LNK2019: unresolved external symbol glfwGetKey referenced in function "void __cdecl process_input(struct GLFWwindow *)" (?process_input@@YAXPEAUGLFWwindow@@@Z)
+main.obj : error LNK2019: unresolved external symbol glfwGetTime referenced in function "float * __cdecl get_triangle_color(void)" (?get_triangle_color@@YAPEAMXZ)
+main.obj : error LNK2019: unresolved external symbol glfwMakeContextCurrent referenced in function main
+main.obj : error LNK2019: unresolved external symbol glfwSwapBuffers referenced in function main
+main.obj : error LNK2019: unresolved external symbol glfwGetProcAddress referenced in function main
+C:\Users\Dell\Documents\OpenGL\Libraries\glfw3.lib : warning LNK4272: library machine type 'x86' conflicts with target machine type 'x64'
+C:\Users\Dell\Documents\LearnOpenGL\x64\Debug\OpenGL First.exe : fatal error LNK1120: 13 unresolved externals
