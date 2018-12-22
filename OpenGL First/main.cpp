@@ -3,23 +3,21 @@
 
 #include <iostream>
 #include "shader.h"
+#include "image_loader.h"
 
 void init_glfw();
 void process_input(GLFWwindow* window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-void initialize_triangle();
 void initialize_rectangle();
 
-float* get_triangle_color();
+void loadAndGenerateTextures();
 
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
-const float COLOR1[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-const float COLOR2[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
 
-unsigned int VBOs[2];
-unsigned int VAOs[2];
+unsigned int VBO;
+unsigned int VAO;
 unsigned int EBO;
 
 int main()
@@ -45,14 +43,14 @@ int main()
 
 	glViewport(0, 0, WIDTH, HEIGHT);
 
-	initialize_triangle();
-	//initialize_rectangle();
+	initialize_rectangle();
 
 	//Wireframe mode
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	Shader shaderInterpolated = Shader("vertexInterpolated.vert", "fragmentInterpolated.frag");
-	Shader shaderUniform = Shader("vertexUniform.vert", "fragmentUniform.frag");
+	Shader shaderInterpolated = Shader("vertexTexture.vert", "fragmentTexture.frag");
+
+	loadAndGenerateTextures();
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -64,28 +62,16 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shaderInterpolated.use();
-		float time = glfwGetTime();
-		float deltaX = time / 10.0f;
-		shaderInterpolated.setFloat("xOffset", deltaX);
-		glBindVertexArray(VAOs[0]);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		float* triangleColor = get_triangle_color();
-		shaderUniform.use();
-		shaderUniform.setFloatVec4("ourColor", triangleColor);
-		delete triangleColor;
-		glBindVertexArray(VAOs[1]);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		//check and call events and swap buffers
 		glfwPollEvents();
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteVertexArrays(2, VAOs);
-	glDeleteBuffers(2, VBOs);
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 
 	glfwTerminate();
@@ -111,52 +97,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void initialize_triangle()
-{
-	float vertices1[] = {
-	-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-	-0.25f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-	 0.0f,  -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-	};
-
-	float vertices2[] = {
-	 0.25f, 0.25f, 0.0f,
-	 0.5f, 0.75f, 0.0f,
-	 0.75f,  0.25f, 0.0f,
-	};
-
-	glGenBuffers(2, VBOs);
-	glGenVertexArrays(2, VAOs);
-
-	glBindVertexArray(VAOs[0]);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	glBindVertexArray(VAOs[1]);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-}
-
 void initialize_rectangle()
 {
 	float vertices[] = {
-	 0.5f,  0.5f, 0.0f,  // top right
-	 0.5f, -0.5f, 0.0f,  // bottom right
-	-0.5f, -0.5f, 0.0f,  // bottom left
-	-0.5f,  0.5f, 0.0f   // top left 
+		// positions          // colors           // texture coords
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
 	};
 
 	unsigned int indices[] = {  // note that we start from 0!
@@ -164,35 +112,52 @@ void initialize_rectangle()
 		1, 2, 3    // second triangle
 	};
 
-	glGenBuffers(1, VBOs);
+	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
-	glGenVertexArrays(1, VAOs);
+	glGenVertexArrays(1, &VAO);
 
-	glBindVertexArray(VAOs[0]);
+	glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 
-float* get_triangle_color()
+void loadAndGenerateTextures()
 {
-	float time = glfwGetTime();
-	float alpha = (sin(time) / 2.0f) + 0.5f;
-	float beta = 1.0f - alpha;
-	float* interpolatedColor = new float[4];
-	interpolatedColor[0] = alpha * COLOR1[0] + beta * COLOR2[0];
-	interpolatedColor[1] = alpha * COLOR1[1] + beta * COLOR2[1];
-	interpolatedColor[2] = alpha * COLOR1[2] + beta * COLOR2[2];
-	interpolatedColor[3] = alpha * COLOR1[3] + beta * COLOR2[3];
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+	// load and generate the texture
+	int width, height, nrChannels;
+	unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
 
-	return interpolatedColor;
+	stbi_image_free(data);
 }
