@@ -16,9 +16,10 @@ void loadAndGenerateTextures();
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
 
-unsigned int VBO;
-unsigned int VAO;
-unsigned int EBO;
+unsigned int VBO, VAO, EBO;
+unsigned int texture1, texture2;
+
+Shader* ourShader_p;
 
 int main()
 {
@@ -48,9 +49,12 @@ int main()
 	//Wireframe mode
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	Shader shaderInterpolated = Shader("vertexTexture.vert", "fragmentTexture.frag");
-
+	Shader ourShader = Shader("vertexTexture.vert", "fragmentTexture.frag");
+	ourShader_p = &ourShader;
 	loadAndGenerateTextures();
+
+	ourShader.use(); // don't forget to activate the shader before setting uniforms!  
+	ourShader.setInt("texture2", 1); // or with shader class
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -61,8 +65,12 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		shaderInterpolated.use();
+		ourShader.use();
 		glBindVertexArray(VAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		//check and call events and swap buffers
@@ -86,10 +94,33 @@ void init_glfw()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
+unsigned int previous_up_state = GLFW_RELEASE;
+unsigned int previous_down_state = GLFW_RELEASE;
+
 void process_input(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS && previous_up_state == GLFW_RELEASE)
+	{
+		float alpha = ourShader_p->getFloat("mixingAlpha") + 0.1f;
+		alpha = alpha >= 1 ? 1 : alpha;
+		ourShader_p->setFloat("mixingAlpha", alpha);
+
+		previous_up_state = GLFW_PRESS;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS && previous_down_state == GLFW_RELEASE)
+	{
+		float alpha = ourShader_p->getFloat("mixingAlpha") - 0.1f;
+		alpha = alpha <= 0 ? 0 : alpha;
+		ourShader_p->setFloat("mixingAlpha", alpha);
+		previous_down_state = GLFW_PRESS;
+	}
+	
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE)
+		previous_up_state = GLFW_RELEASE;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_RELEASE)
+		previous_down_state = GLFW_RELEASE;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -137,9 +168,11 @@ void initialize_rectangle()
 
 void loadAndGenerateTextures()
 {
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	stbi_set_flip_vertically_on_load(true);
+
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	
 	// set the texture wrapping/filtering options (on the currently bound texture object)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -158,6 +191,26 @@ void loadAndGenerateTextures()
 	{
 		std::cout << "Failed to load texture" << std::endl;
 	}
+	stbi_image_free(data);
 
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
 	stbi_image_free(data);
 }

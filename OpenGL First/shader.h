@@ -75,6 +75,12 @@ public:
 		glUseProgram(ID);
 	}
 	// utility uniform functions
+	float getFloat(const std::string &name)
+	{
+		float result;
+		glGetUniformfv(ID, glGetUniformLocation(ID, name.c_str()), &result);
+		return result;
+	}
 	// ------------------------------------------------------------------------
 	void setBool(const std::string &name, bool value) const
 	{
