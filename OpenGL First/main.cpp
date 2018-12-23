@@ -1,5 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
 #include "shader.h"
@@ -20,6 +23,7 @@ unsigned int VBO, VAO, EBO;
 unsigned int texture1, texture2;
 
 Shader* ourShader_p;
+glm::mat4 trans;
 
 int main()
 {
@@ -71,6 +75,17 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
+		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+		glm::mat4 trans;
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		trans = glm::mat4();
+		trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+		float nextScale = (sin((float)glfwGetTime())/2)+0.5;
+		trans = glm::scale(trans, glm::vec3(nextScale, nextScale, nextScale));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, &trans[0][0]);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		//check and call events and swap buffers
@@ -94,33 +109,10 @@ void init_glfw()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
-unsigned int previous_up_state = GLFW_RELEASE;
-unsigned int previous_down_state = GLFW_RELEASE;
-
 void process_input(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS && previous_up_state == GLFW_RELEASE)
-	{
-		float alpha = ourShader_p->getFloat("mixingAlpha") + 0.1f;
-		alpha = alpha >= 1 ? 1 : alpha;
-		ourShader_p->setFloat("mixingAlpha", alpha);
-
-		previous_up_state = GLFW_PRESS;
-	}
-	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS && previous_down_state == GLFW_RELEASE)
-	{
-		float alpha = ourShader_p->getFloat("mixingAlpha") - 0.1f;
-		alpha = alpha <= 0 ? 0 : alpha;
-		ourShader_p->setFloat("mixingAlpha", alpha);
-		previous_down_state = GLFW_PRESS;
-	}
-	
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE)
-		previous_up_state = GLFW_RELEASE;
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_RELEASE)
-		previous_down_state = GLFW_RELEASE;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
