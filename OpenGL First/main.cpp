@@ -11,9 +11,10 @@
 void init_glfw();
 void process_input(GLFWwindow* window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void update_camera();
+void update_time();
 
 void initialize_rectangle();
-
 void loadAndGenerateTextures();
 
 const unsigned int WIDTH = 800;
@@ -21,6 +22,10 @@ const unsigned int HEIGHT = 600;
 
 unsigned int VBO, VAO, EBO;
 unsigned int texture1, texture2;
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 Shader* ourShader_p;
 
@@ -40,6 +45,9 @@ glm::vec3 cubePositions[] = {
   glm::vec3(1.5f,  0.2f, -1.5f),
   glm::vec3(-1.3f,  1.0f, -1.5f)
 };
+
+float deltaTime = 0.0f;	// Time between current frame and last frame
+float lastFrame = 0.0f; // Time of last frame
 
 int main()
 {
@@ -83,8 +91,9 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
-		//input
+		update_time();
 		process_input(window);
+		update_camera();
 
 		//rendering
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -138,22 +147,16 @@ void process_input(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-	{
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, 0.01f));
-	}
-	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-	{
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -0.01f));
-	}
-	else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-	{
-		view = glm::translate(view, glm::vec3(0.01f, 0.0f, 0.0f));
-	}
-	else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-	{
-		view = glm::translate(view, glm::vec3(-0.01f, 0.0f, 0.0f));
-	}
+
+	float cameraSpeed = 2.5f * deltaTime; // adjust accordingly
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -280,4 +283,16 @@ void loadAndGenerateTextures()
 		std::cout << "Failed to load texture" << std::endl;
 	}
 	stbi_image_free(data);
+}
+
+void update_camera()
+{
+	view = glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp);
+}
+
+void update_time()
+{
+	float currentFrame = glfwGetTime();
+	deltaTime = currentFrame - lastFrame;
+	lastFrame = currentFrame;
 }
