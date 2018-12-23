@@ -14,7 +14,7 @@
 
 
 //Constants
-const const char* SCENE_PATH = "scene3.txt";
+const const char* SCENE_PATH = "scene4.txt";
 const const char* CAM_PATH = "cam.txt";
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
@@ -59,4 +59,5 @@ Shader* ourShader;
 //Static objects
 Scene* scene;
 TPPcamera tppCamera = TPPcamera(CAM_PATH);
+FPScamera fpsCamera = FPScamera(glm::vec3(0.0f, 1.0f, 0.0f));
 Camera& camera = tppCamera;

@@ -133,7 +133,31 @@ void core_loop()
 	glm::mat4 model;
 	ourShader->setMat4("model", model);
 
+	//left bottom
+	glViewport(0, 0, WIDTH*0.5, HEIGHT*0.5);
 	scene->Draw();
+
+	//right bottom
+	glViewport(WIDTH*0.5, 0, WIDTH*0.5, HEIGHT*0.5);
+	scene->Draw();
+
+	//left top
+	glViewport(0, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
+	scene->Draw();
+
+	//right top
+	view = glm::mat4();
+	ourShader->setMat4("view", view);
+	model = glm::translate(model, glm::vec3(400.0f, 300.0f, -10.0f));
+	model = glm::scale(model, glm::vec3(100.0f, 100.0f, 0.0f));
+	ourShader->setMat4("model", model);
+	projection = glm::ortho(0.0f, (float)WIDTH, 0.0f, (float)HEIGHT, -10.0f, 1000.0f);
+	ourShader->setMat4("projection", projection);
+	
+	glViewport(WIDTH*0.5, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
+	scene->Draw();
+
+	glViewport(0, 0, WIDTH, HEIGHT); //restore default
 
 	//check and call events and swap buffers
 	glfwPollEvents();
