@@ -40,8 +40,9 @@ private:
 	unsigned int* indices;
 	unsigned int indices_count;
 
-	float minCoords[3];
-	float maxCoords[3];
+	float minCoords[VERTEX_SIZE];
+	float maxCoords[VERTEX_SIZE];
+	float center[VERTEX_SIZE];
 
 	std::stringstream sceneDataStream;
 	unsigned int VBO, VAO, EBO;
@@ -75,10 +76,6 @@ public:
 
 	float* GetCenter()
 	{
-		float* center = new float[3];
-		center[0] = (minCoords[0] + maxCoords[0]) / 2.0f;
-		center[1] = (minCoords[1] + maxCoords[1]) / 2.0f;
-		center[2] = (minCoords[2] + maxCoords[2]) / 2.0f;
 		return center;
 	}
 
@@ -87,33 +84,84 @@ public:
 		glm::mat2 ortho;
 		float ratioWidth = ratio;
 		float ratioHeight = 1.0f / ratio;
-		float* center_p = GetCenter();
-		float center[3];
-		center[0] = center_p[0];
-		center[1] = center_p[1];
-		center[2] = center_p[2];
-		delete[] center_p;
 
 		if (side == LEFT || side == RIGHT)
 		{
-			if ((glm::abs(minCoords[0]) + maxCoords[0]) >= (glm::abs(minCoords[1]) + maxCoords[1]))
-				return glm::ortho(minCoords[0] - ORTHO_OFFSET, maxCoords[0]+ ORTHO_OFFSET, center[1] + (minCoords[0] - ORTHO_OFFSET) * ratioHeight, center[1] + (maxCoords[0] + ORTHO_OFFSET) * ratioHeight, minCoords[2] - 1.0f, maxCoords[2] + 1.0f);
+			if ((glm::abs(minCoords[0]) + glm::abs(maxCoords[0])) >= (glm::abs(minCoords[1]) + glm::abs(maxCoords[1])) &&
+				(glm::abs(minCoords[0]) + glm::abs(maxCoords[0]))*ratioHeight > (glm::abs(minCoords[1]) + glm::abs(maxCoords[1])))
+			{
+				float minW = minCoords[0];
+				float maxW = maxCoords[0];
+				float minH = center[1] + minW * ratioHeight;
+				float maxH = center[1] + maxW * ratioHeight;
+				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1]))/2.0f;
+				minH -= offsetH;
+				maxH -= offsetH;
+				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET*ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[2] - 1.0f, maxCoords[2] + 1.0f);
+			}
 			else
-				return glm::ortho(center[0] + (minCoords[1] - ORTHO_OFFSET) * ratioWidth, center[0] + (maxCoords[1] + ORTHO_OFFSET) * ratioWidth,  minCoords[1] - ORTHO_OFFSET, maxCoords[1] + ORTHO_OFFSET, minCoords[2] - 1.0f, maxCoords[2] + 1.0f);
+			{
+				float minH = minCoords[1];
+				float maxH = maxCoords[1];
+				float minW = center[0] + minH * ratioWidth;
+				float maxW = center[0] + maxH * ratioWidth;
+				float offsetW = ((minW + maxW) - (minCoords[0] + maxCoords[0])) / 2.0f;
+				minW -= offsetW;
+				maxW -= offsetW;
+				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[2] - 1.0f, maxCoords[2] + 1.0f);
+			}
 		}
 		else if (side == TOP || side == BOTTOM)
 		{
-			if ((glm::abs(minCoords[0]) + glm::abs(maxCoords[0])) >= (glm::abs(minCoords[2]) + glm::abs(maxCoords[2])))
-				return glm::ortho(center[2] + (minCoords[0] - ORTHO_OFFSET) * ratioWidth, center[2] + (maxCoords[0] + ORTHO_OFFSET) * ratioWidth, minCoords[0] - ORTHO_OFFSET, maxCoords[0] + ORTHO_OFFSET, minCoords[1] - 2.0f, maxCoords[1] + 2.0f);
+			if ((glm::abs(minCoords[0]) + glm::abs(maxCoords[0])) <= (glm::abs(minCoords[2]) + glm::abs(maxCoords[2])) &&
+				(glm::abs(minCoords[2]) + glm::abs(maxCoords[2]))*ratioHeight > (glm::abs(minCoords[0]) + glm::abs(maxCoords[0])))
+			{
+				float minW = minCoords[2];
+				float maxW = maxCoords[2];
+				float minH = center[0] + minW * ratioHeight;
+				float maxH = center[0] + maxW * ratioHeight;
+				float offsetH = ((minH + maxH) - (minCoords[0] + maxCoords[0])) / 2.0f;
+				minH -= offsetH;
+				maxH -= offsetH;
+				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[1] - 1.0f, maxCoords[1] + 1.0f);
+			}
 			else
-				return glm::ortho(minCoords[2] - ORTHO_OFFSET, maxCoords[2] + ORTHO_OFFSET, center[0] + (minCoords[2] - ORTHO_OFFSET) * ratioHeight, center[0] + (maxCoords[2] + ORTHO_OFFSET) * ratioHeight, minCoords[1] - 2.0f, maxCoords[1] + 2.0f);
+			{
+				float minH = minCoords[0];
+				float maxH = maxCoords[0];
+				float minW = center[2] + minH * ratioWidth;
+				float maxW = center[2] + maxH * ratioWidth;
+				float offsetW = ((minW + maxW) - (minCoords[2] + maxCoords[2])) / 2.0f;
+				minW -= offsetW;
+				maxW -= offsetW;
+				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[1] - 1.0f, maxCoords[1] + 1.0f);
+			}
 		}
 		else if (side == FRONT || side == BACK)
 		{
-			if ((glm::abs(minCoords[1]) + (glm::abs(maxCoords[1])) >= (glm::abs(minCoords[2]) + glm::abs(maxCoords[2]))))
-				return glm::ortho(center[2] + (minCoords[1] - ORTHO_OFFSET) * ratioWidth, center[2] + (maxCoords[1] + ORTHO_OFFSET) * ratioWidth, minCoords[1] - ORTHO_OFFSET, maxCoords[1] + ORTHO_OFFSET, minCoords[0] - 2.0f, maxCoords[0] + 2.0f);
+			if ((glm::abs(minCoords[1]) + (glm::abs(maxCoords[1])) >= (glm::abs(minCoords[2]) + glm::abs(maxCoords[2]))) &&
+				(glm::abs(minCoords[1]) + glm::abs(maxCoords[1]))*ratioWidth > (glm::abs(minCoords[2]) + glm::abs(maxCoords[2])))
+			{
+				float minH = minCoords[1];
+				float maxH = maxCoords[1];
+				float minW = center[2] + minH * ratioWidth;
+				float maxW = center[2] + maxH * ratioWidth;
+				float offsetW = ((minW + maxW) - (minCoords[2] + maxCoords[2])) / 2.0f;
+				minW -= offsetW;
+				maxW -= offsetW;
+				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[0] - 1.0f, maxCoords[0] + 1.0f);
+			}
 			else
-				return glm::ortho(minCoords[2] - ORTHO_OFFSET, maxCoords[2] + ORTHO_OFFSET, center[1] + (minCoords[2] - ORTHO_OFFSET) * ratioHeight, center[1] + (maxCoords[2] + ORTHO_OFFSET) * ratioHeight, minCoords[0] - 2.0f, maxCoords[0] + 2.0f);
+			{
+				float minW = minCoords[2];
+				float maxW = maxCoords[2];
+				float minH = center[1] + minW * ratioHeight;
+				float maxH = center[1] + maxW * ratioHeight;
+				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1])) / 2.0f;
+				minH -= offsetH;
+				maxH -= offsetH;
+				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[0] - 1.0f, maxCoords[0] + 1.0f);
+			}
 		}
 
 		return glm::mat4(ortho);
@@ -251,6 +299,10 @@ private:
 		maxCoords[0] = find_max_vertex_coord(X);
 		maxCoords[1] = find_max_vertex_coord(Y);
 		maxCoords[2] = find_max_vertex_coord(Z);
+
+		center[0] = (minCoords[0] + maxCoords[0]) / 2.0f;
+		center[1] = (minCoords[1] + maxCoords[2]) / 2.0f;
+		center[2] = (minCoords[2] + maxCoords[2]) / 2.0f;
 	}
 
 	float find_min_vertex_coord(unsigned int axis)

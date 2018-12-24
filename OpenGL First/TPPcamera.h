@@ -109,17 +109,16 @@ public:
 		yoffset *= MouseSensitivity;
 		
 		Pitch -= yoffset;
-		Pitch = glm::mod(Pitch, 360.0f);
 		angleAroundPlayer += xoffset;
 		angleAroundPlayer = glm::mod(angleAroundPlayer, 360.0f);
 
-		//if (constrainPitch)
-		//{
-		//	if (Pitch > 89.0f)
-		//		Pitch = 89.0f;
-		//	if (Pitch < -89.0f)
-		//		Pitch = -89.0f;
-		//}
+		if (constrainPitch)
+		{
+			if (Pitch > 89.0f)
+				Pitch = 89.0f;
+			if (Pitch < -89.0f)
+				Pitch = -89.0f;
+		}
 
 		//// Update Front, Right and Up Vectors using the updated Euler angles
 		updateCameraVectors();

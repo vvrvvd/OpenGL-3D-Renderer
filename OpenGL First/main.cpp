@@ -146,7 +146,7 @@ void core_loop()
 	ourShader->setMat4("view", view);
 	ourShader->setMat4("projection", projection);
 	glViewport(WIDTH*0.5, 0, WIDTH*0.5, HEIGHT*0.5);
-	scene->Draw();
+	scene->Draw();      
 
 	//left top
 	view = camera.GetViewMatrix();
