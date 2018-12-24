@@ -124,34 +124,45 @@ void core_loop()
 
 	ourShader->use();
 
-	glm::mat4 view = camera.GetViewMatrix();
-	ourShader->setMat4("view", view);
-
-	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-	ourShader->setMat4("projection", projection);
-
+	glm::mat4 view;
+	glm::mat4 projection;
 	glm::mat4 model;
-	ourShader->setMat4("model", model);
 
 	//left bottom
+	view = glm::mat4();
+	view = scene->GetOrthoView(Scene::TOP);
+	projection = scene->GetOrtho(RATIO, Scene::TOP);
+	ourShader->setMat4("model", model);
+	ourShader->setMat4("view", view);
+	ourShader->setMat4("projection", projection);
 	glViewport(0, 0, WIDTH*0.5, HEIGHT*0.5);
 	scene->Draw();
 
+
 	//right bottom
+	view = scene->GetOrthoView(Scene::FRONT);
+	projection = scene->GetOrtho(RATIO, Scene::FRONT);
+	ourShader->setMat4("model", model);
+	ourShader->setMat4("view", view);
+	ourShader->setMat4("projection", projection);
 	glViewport(WIDTH*0.5, 0, WIDTH*0.5, HEIGHT*0.5);
 	scene->Draw();
 
 	//left top
+	view = camera.GetViewMatrix();
+	ourShader->setMat4("view", view);
+	projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+	model = glm::mat4();
+	ourShader->setMat4("projection", projection);
+	ourShader->setMat4("model", model);
 	glViewport(0, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
 	scene->Draw();
 
 	//right top
-	view = glm::mat4();
-	ourShader->setMat4("view", view);
-	model = glm::translate(model, glm::vec3(400.0f, 300.0f, -10.0f));
-	model = glm::scale(model, glm::vec3(100.0f, 100.0f, 0.0f));
+	view = scene->GetOrthoView(Scene::RIGHT);
+	projection = scene->GetOrtho(RATIO, Scene::RIGHT);
 	ourShader->setMat4("model", model);
-	projection = glm::ortho(0.0f, (float)WIDTH, 0.0f, (float)HEIGHT, -10.0f, 1000.0f);
+	ourShader->setMat4("view", view);
 	ourShader->setMat4("projection", projection);
 	
 	glViewport(WIDTH*0.5, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);

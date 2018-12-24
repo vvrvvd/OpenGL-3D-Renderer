@@ -14,10 +14,11 @@
 
 
 //Constants
-const const char* SCENE_PATH = "scene4.txt";
+const const char* SCENE_PATH = "scene3.txt";
 const const char* CAM_PATH = "cam.txt";
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
+const float RATIO = (float)WIDTH / (float)HEIGHT;
 
 const glm::vec4 BACKGROUND_COLOR = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -52,12 +53,12 @@ float lastY = HEIGHT / 2.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-//Pointers
-GLFWwindow* window;
+//Dynamic objects
 Shader* ourShader;
+Scene* scene;
 
 //Static objects
-Scene* scene;
+GLFWwindow* window;
 TPPcamera tppCamera = TPPcamera(CAM_PATH);
 FPScamera fpsCamera = FPScamera(glm::vec3(0.0f, 1.0f, 0.0f));
 Camera& camera = tppCamera;

@@ -4,13 +4,29 @@
 
 const unsigned int VERTEX_SIZE = 3;
 const unsigned int INDEX_SIZE = 3;
+const float ORTHO_OFFSET = 1.0f;
 
 class Scene
 {
 
+public:
+
+	enum Side {
+		LEFT,
+		RIGHT,
+		TOP,
+		BOTTOM,
+		FRONT,
+		BACK
+	};
+
 private:
 	const std::string VERTICES_HEADER = "points_count";
 	const std::string INDICES_HEADER = "triangles_count";
+
+	const unsigned int X = 0;
+	const unsigned int Y = 1;
+	const unsigned int Z = 2;
 
 	const unsigned int LOOK_FOR_VERTICES = 0;
 	const unsigned int ASSIGN_VERTICES_ARRAY = 1;
@@ -24,6 +40,9 @@ private:
 	unsigned int* indices;
 	unsigned int indices_count;
 
+	float minCoords[3];
+	float maxCoords[3];
+
 	std::stringstream sceneDataStream;
 	unsigned int VBO, VAO, EBO;
 
@@ -33,6 +52,7 @@ public:
 	{
 		load_file(scenePath);
 		parse_data();
+		find_clipping_coords();
 		init_opengl_buffors();
 	}
 
@@ -41,6 +61,82 @@ public:
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+	}
+
+	float* GetMinCoords()
+	{
+		return minCoords;
+	}
+
+	float* GetMaxCoords()
+	{
+		return maxCoords;
+	}
+
+	float* GetCenter()
+	{
+		float* center = new float[3];
+		center[0] = (minCoords[0] + maxCoords[0]) / 2.0f;
+		center[1] = (minCoords[1] + maxCoords[1]) / 2.0f;
+		center[2] = (minCoords[2] + maxCoords[2]) / 2.0f;
+		return center;
+	}
+
+	glm::mat4 GetOrtho(float ratio, Side side)
+	{
+		glm::mat2 ortho;
+		float ratioWidth = ratio;
+		float ratioHeight = 1.0f / ratio;
+		float* center_p = GetCenter();
+		float center[3];
+		center[0] = center_p[0];
+		center[1] = center_p[1];
+		center[2] = center_p[2];
+		delete[] center_p;
+
+		if (side == LEFT || side == RIGHT)
+		{
+			if ((glm::abs(minCoords[0]) + maxCoords[0]) >= (glm::abs(minCoords[1]) + maxCoords[1]))
+				return glm::ortho(minCoords[0] - ORTHO_OFFSET, maxCoords[0]+ ORTHO_OFFSET, center[1] + (minCoords[0] - ORTHO_OFFSET) * ratioHeight, center[1] + (maxCoords[0] + ORTHO_OFFSET) * ratioHeight, minCoords[2] - 1.0f, maxCoords[2] + 1.0f);
+			else
+				return glm::ortho(center[0] + (minCoords[1] - ORTHO_OFFSET) * ratioWidth, center[0] + (maxCoords[1] + ORTHO_OFFSET) * ratioWidth,  minCoords[1] - ORTHO_OFFSET, maxCoords[1] + ORTHO_OFFSET, minCoords[2] - 1.0f, maxCoords[2] + 1.0f);
+		}
+		else if (side == TOP || side == BOTTOM)
+		{
+			if ((glm::abs(minCoords[0]) + glm::abs(maxCoords[0])) >= (glm::abs(minCoords[2]) + glm::abs(maxCoords[2])))
+				return glm::ortho(center[2] + (minCoords[0] - ORTHO_OFFSET) * ratioWidth, center[2] + (maxCoords[0] + ORTHO_OFFSET) * ratioWidth, minCoords[0] - ORTHO_OFFSET, maxCoords[0] + ORTHO_OFFSET, minCoords[1] - 2.0f, maxCoords[1] + 2.0f);
+			else
+				return glm::ortho(minCoords[2] - ORTHO_OFFSET, maxCoords[2] + ORTHO_OFFSET, center[0] + (minCoords[2] - ORTHO_OFFSET) * ratioHeight, center[0] + (maxCoords[2] + ORTHO_OFFSET) * ratioHeight, minCoords[1] - 2.0f, maxCoords[1] + 2.0f);
+		}
+		else if (side == FRONT || side == BACK)
+		{
+			if ((glm::abs(minCoords[1]) + (glm::abs(maxCoords[1])) >= (glm::abs(minCoords[2]) + glm::abs(maxCoords[2]))))
+				return glm::ortho(center[2] + (minCoords[1] - ORTHO_OFFSET) * ratioWidth, center[2] + (maxCoords[1] + ORTHO_OFFSET) * ratioWidth, minCoords[1] - ORTHO_OFFSET, maxCoords[1] + ORTHO_OFFSET, minCoords[0] - 2.0f, maxCoords[0] + 2.0f);
+			else
+				return glm::ortho(minCoords[2] - ORTHO_OFFSET, maxCoords[2] + ORTHO_OFFSET, center[1] + (minCoords[2] - ORTHO_OFFSET) * ratioHeight, center[1] + (maxCoords[2] + ORTHO_OFFSET) * ratioHeight, minCoords[0] - 2.0f, maxCoords[0] + 2.0f);
+		}
+
+		return glm::mat4(ortho);
+	}
+
+	glm::mat4 GetOrthoView(Side side)
+	{
+		switch (side) {
+			case LEFT:
+				return glm::lookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+			case RIGHT:
+				return glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+			case TOP:
+				return glm::lookAt(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
+			case BOTTOM:
+				return glm::lookAt(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
+			case FRONT:
+				return glm::lookAt(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+			case BACK:
+				return glm::lookAt(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+			}
+
+		return glm::mat4();
 	}
 
 	~Scene()
@@ -144,6 +240,41 @@ private:
 				}
 			}
 		}
+	}
+
+	void find_clipping_coords()
+	{
+		minCoords[0] = find_min_vertex_coord(X);
+		minCoords[1] = find_min_vertex_coord(Y);
+		minCoords[2] = find_min_vertex_coord(Z);
+
+		maxCoords[0] = find_max_vertex_coord(X);
+		maxCoords[1] = find_max_vertex_coord(Y);
+		maxCoords[2] = find_max_vertex_coord(Z);
+	}
+
+	float find_min_vertex_coord(unsigned int axis)
+	{
+		float min = vertices[axis];
+		for (int i = axis + VERTEX_SIZE; i < vertices_count; i += VERTEX_SIZE)
+		{
+			if (vertices[i] < min)
+				min = vertices[i];
+		}
+
+		return min;
+	}
+
+	float find_max_vertex_coord(unsigned int axis)
+	{
+		float max = vertices[axis];
+		for (int i = axis + VERTEX_SIZE; i < vertices_count; i += VERTEX_SIZE)
+		{
+			if (vertices[i] > max)
+				max = vertices[i];
+		}
+
+		return max;
 	}
 
 	void init_opengl_buffors()
