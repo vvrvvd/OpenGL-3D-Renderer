@@ -97,7 +97,7 @@ public:
 				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1]))/2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
-				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET*ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[2] - 1.0f, maxCoords[2] + 1.0f);
+				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET*ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[2] - 100.0f, maxCoords[2] + 100.0f);
 			}
 			else
 			{
@@ -108,7 +108,7 @@ public:
 				float offsetW = ((minW + maxW) - (minCoords[0] + maxCoords[0])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
-				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[2] - 1.0f, maxCoords[2] + 1.0f);
+				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[2] - 100.0f, maxCoords[2] + 100.0f);
 			}
 		}
 		else if (side == TOP || side == BOTTOM)
@@ -123,7 +123,7 @@ public:
 				float offsetH = ((minH + maxH) - (minCoords[0] + maxCoords[0])) / 2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
-				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[1] - 1.0f, maxCoords[1] + 1.0f);
+				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[1] - 100.0f, maxCoords[1] + 100.0f);
 			}
 			else
 			{
@@ -134,7 +134,7 @@ public:
 				float offsetW = ((minW + maxW) - (minCoords[2] + maxCoords[2])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
-				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[1] - 1.0f, maxCoords[1] + 1.0f);
+				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[1] - 100.0f, maxCoords[1] + 100.0f);
 			}
 		}
 		else if (side == FRONT || side == BACK)
@@ -149,7 +149,7 @@ public:
 				float offsetW = ((minW + maxW) - (minCoords[2] + maxCoords[2])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
-				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[0] - 1.0f, maxCoords[0] + 1.0f);
+				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[0] - 100.0f, maxCoords[0] + 100.0f);
 			}
 			else
 			{

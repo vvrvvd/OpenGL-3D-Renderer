@@ -6,11 +6,14 @@
 #include <iostream>
 
 #include "shader.h"
+#include "image_loader.h"
+
+#include "Quad.h"
+#include "Scene.h"
 #include "Camera.h"
 #include "TPPcamera.h"
 #include "FPScamera.h"
-#include "image_loader.h"
-#include "scene_loader.h"
+
 
 
 //Constants
@@ -48,6 +51,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 bool firstMouse = true;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
+unsigned int last_rmb_state = GLFW_RELEASE;
 
 //Time variables
 float deltaTime = 0.0f;
