@@ -132,7 +132,17 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="FPScamera.h" />
+    <ClInclude Include="image_loader.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="Quad.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="string_utils.h" />
+    <ClInclude Include="TPPcamera.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

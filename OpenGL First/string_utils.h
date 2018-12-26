@@ -1,7 +1,6 @@
 #ifndef STR_UTILS
 #define STR_UTILS
 
-
 #include <iostream>
 #include <vector>
 
@@ -18,6 +17,20 @@ std::vector<std::string> split(const std::string& str, const std::string& delim)
 		prev = pos + delim.length();
 	} while (pos < str.length() && prev < str.length());
 	return tokens;
+}
+
+void print(glm::vec3 vector, bool endline = true)
+{
+	std::cout << vector[0] << " " << vector[1] << " " << vector[2];
+	if (endline)
+		std::cout << std::endl;
+}
+
+void print(glm::vec4 vector, bool endline = true)
+{
+	std::cout << vector[0] << " " << vector[1] << " " << vector[2] << " " << vector[3] << std::endl;
+	if (endline)
+		std::cout << std::endl;
 }
 
 #endif

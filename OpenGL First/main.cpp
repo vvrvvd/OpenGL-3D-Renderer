@@ -147,8 +147,12 @@ void init_camera_frustum_buffers()
 	glBindVertexArray(0);
 }
 
-void update_frustum_points(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
+void update_frustum_points()
 {
+	glm::mat4 model = glm::mat4();
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FRUSTUM_SIZE);
+
 	glm::vec4 screenVertices[8];
 	screenVertices[0] = glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
 	screenVertices[1] = glm::vec4(1.0f, 1.0f, -1.0f, 1.0f);
@@ -191,82 +195,32 @@ void update_time()
 void core_loop()
 {
 	process_input(window);
+	update_frustum_points();
 
 	//rendering
 	glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glm::mat4 view;
-	glm::mat4 projection;
-	glm::mat4 model;
+	glm::mat4 frustum_model = glm::mat4();
 
 	//left top
-
-	model = glm::mat4();
-	view = camera.GetViewMatrix();
-	projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FAR_PLANE);
-	ourShader->use();
-	ourShader->setMat4("model", model);
-	ourShader->setMat4("view", view);
-	ourShader->setMat4("projection", projection);
 	glViewport(0, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
-	scene->Draw();
-	projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FRUSTUM_SIZE);
-	update_frustum_points(model, view, projection);
+	draw_perspective_view();
 
 	//left bottom
-	model = glm::mat4();
-	view = scene->GetOrthoView(Scene::TOP);
-	projection = scene->GetOrtho(RATIO, Scene::TOP);
-	ourShader->use();
-	ourShader->setMat4("model", model);
-	ourShader->setMat4("view", view);
-	ourShader->setMat4("projection", projection);
 	glViewport(0, 0, WIDTH*0.5, HEIGHT*0.5);
-	scene->Draw();
-
-	frustumShader->use();
-	frustumShader->setMat4("model", model);
-	frustumShader->setMat4("view", view);
-	frustumShader->setMat4("projection", projection);
-	glBindVertexArray(cameraVAO);
-	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+	draw_ortho(Scene::TOP);
+	draw_frustum(frustum_model, scene->GetOrthoView(Scene::TOP), scene->GetOrtho(RATIO, Scene::TOP));
 
 	//right bottom
-	model = glm::mat4();
-	view = scene->GetOrthoView(Scene::FRONT);
-	projection = scene->GetOrtho(RATIO, Scene::FRONT);
-	ourShader->use();
-	ourShader->setMat4("model", model);
-	ourShader->setMat4("view", view);
-	ourShader->setMat4("projection", projection);
 	glViewport(WIDTH*0.5, 0, WIDTH*0.5, HEIGHT*0.5);
-	scene->Draw();   
-
-	frustumShader->use();
-	frustumShader->setMat4("model", model);
-	frustumShader->setMat4("view", view);
-	frustumShader->setMat4("projection", projection);
-	glBindVertexArray(cameraVAO);
-	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+	draw_ortho(Scene::FRONT);
+	draw_frustum(frustum_model, scene->GetOrthoView(Scene::FRONT), scene->GetOrtho(RATIO, Scene::FRONT));
 
 	//right top
-	model = glm::mat4();
-	view = scene->GetOrthoView(Scene::RIGHT);
-	projection = scene->GetOrtho(RATIO, Scene::RIGHT);
-	ourShader->use();
-	ourShader->setMat4("model", model);
-	ourShader->setMat4("view", view);
-	ourShader->setMat4("projection", projection);
 	glViewport(WIDTH*0.5, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
-	scene->Draw();
-
-	frustumShader->use();
-	frustumShader->setMat4("model", model);
-	frustumShader->setMat4("view", view);
-	frustumShader->setMat4("projection", projection);
-	glBindVertexArray(cameraVAO);
-	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+	draw_ortho(Scene::RIGHT);
+	draw_frustum(frustum_model, scene->GetOrthoView(Scene::RIGHT), scene->GetOrtho(RATIO, Scene::RIGHT));
 
 	glViewport(0, 0, WIDTH, HEIGHT); //restore default
 
@@ -305,5 +259,38 @@ void process_input(GLFWwindow* window)
 	}
 }
 
+void draw_frustum(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
+{
+	frustumShader->use();
+	frustumShader->setMat4("model", model);
+	frustumShader->setMat4("view", view);
+	frustumShader->setMat4("projection", projection);
+	glBindVertexArray(cameraVAO);
+	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
 
+void draw_perspective_view()
+{
+	glm::mat4 model = glm::mat4();
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FAR_PLANE);
+	ourShader->use();
+	ourShader->setMat4("model", model);
+	ourShader->setMat4("view", view);
+	ourShader->setMat4("projection", projection);
+	scene->Draw();
+}
+
+void draw_ortho(Scene::Side side)
+{
+	glm::mat4 model = glm::mat4();
+	glm::mat4 view = scene->GetOrthoView(side);
+	glm::mat4 projection = scene->GetOrtho(RATIO, side);
+	ourShader->use();
+	ourShader->setMat4("model", model);
+	ourShader->setMat4("view", view);
+	ourShader->setMat4("projection", projection);
+	scene->Draw();
+}
 

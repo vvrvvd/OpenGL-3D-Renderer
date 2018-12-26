@@ -1,0 +1,33 @@
+#ifndef  CONFIG
+#define CONFIG
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+
+#include "shader.h"
+#include "image_loader.h"
+#include "Quad.h"
+#include "Scene.h"
+#include "TPPcamera.h"
+#include "FPScamera.h"
+
+const const char* SCENE_PATH = "scene3.txt";
+const const char* CAM_PATH = "cam.txt";
+
+const unsigned int WIDTH = 800;
+const unsigned int HEIGHT = 600;
+
+const float NEAR_PLANE = 0.1f;
+const float FAR_PLANE = 20.0f;
+const float FRUSTUM_SIZE = 2.5f;
+const glm::vec4 BACKGROUND_COLOR = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
+
+TPPcamera tppCamera = TPPcamera(CAM_PATH);
+FPScamera fpsCamera = FPScamera(glm::vec3(-2.0f, 2.0f, 2.0f));
+Camera& camera = tppCamera;
+
+#endif // ! CONFIG
