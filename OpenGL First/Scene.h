@@ -160,7 +160,7 @@ public:
 				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1])) / 2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
-				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[0] - 1.0f, maxCoords[0] + 1.0f);
+				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[0] - 100.0f, maxCoords[0] + 100.0f);
 			}
 		}
 

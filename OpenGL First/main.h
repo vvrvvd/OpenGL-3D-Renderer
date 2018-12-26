@@ -22,7 +22,9 @@ const const char* CAM_PATH = "cam.txt";
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
 const float RATIO = (float)WIDTH / (float)HEIGHT;
-
+const float NEAR_PLANE = 0.1f;
+const float FAR_PLANE = 20.0f;
+const float FRUSTUM_SIZE = 2.5f;
 const glm::vec4 BACKGROUND_COLOR = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
 
 int main();
@@ -36,6 +38,8 @@ void load_shaders();
 void dispose_shaders();
 void load_scene();
 void dispose_scene();
+void init_camera_frustum_buffers();
+void update_frustum_points(glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
 //Core loop
 void core_loop();
@@ -59,10 +63,22 @@ float lastFrame = 0.0f;
 
 //Dynamic objects
 Shader* ourShader;
+Shader* frustumShader;
 Scene* scene;
 
 //Static objects
 GLFWwindow* window;
 TPPcamera tppCamera = TPPcamera(CAM_PATH);
-FPScamera fpsCamera = FPScamera(glm::vec3(0.0f, 1.0f, 0.0f));
-Camera& camera = tppCamera;
+FPScamera fpsCamera = FPScamera(glm::vec3(-2.0f, 2.0f, 2.0f));
+Camera& camera = fpsCamera;
+
+unsigned int cameraVAO;
+unsigned int cameraVBO;
+unsigned int cameraEBO;
+
+float frustumVertices[24];
+
+void print(glm::vec3 vector)
+{
+	std::cout << vector[0] << " " << vector[1] << " " << vector[2] << std::endl;
+}
