@@ -11,6 +11,8 @@ void init_glfw();
 void init_window();
 void init_glad();
 void config_openGL();
+void init_imgui();
+void draw_UI();
 void load_shaders();
 void dispose_shaders();
 void load_scene();

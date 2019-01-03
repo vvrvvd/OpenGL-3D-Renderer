@@ -14,8 +14,11 @@
 #include "Scene.h"
 #include "TPPcamera.h"
 #include "FPScamera.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
-const const char* SCENE_PATH = "scene3.txt";
+const const char* SCENE_PATH = "scene2.txt";
 const const char* CAM_PATH = "cam.txt";
 
 const unsigned int WIDTH = 800;
@@ -28,6 +31,6 @@ const glm::vec4 BACKGROUND_COLOR = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
 
 TPPcamera tppCamera = TPPcamera(CAM_PATH);
 FPScamera fpsCamera = FPScamera(glm::vec3(-2.0f, 2.0f, 2.0f));
-Camera& camera = tppCamera;
+Camera& camera = fpsCamera;
 
 #endif // ! CONFIG
