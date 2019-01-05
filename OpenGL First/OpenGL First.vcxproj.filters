@@ -54,6 +54,9 @@
     <ClCompile Include="imgui_impl_opengl3.cpp">
       <Filter>Pliki źródłowe\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="ImGuiFileDialog.cpp">
+      <Filter>Pliki źródłowe\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="image_loader.h">
@@ -86,9 +89,6 @@
     <ClInclude Include="FPScamera.h">
       <Filter>Pliki nagłówkowe\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="TPPcamera.h">
-      <Filter>Pliki nagłówkowe\Objects</Filter>
-    </ClInclude>
     <ClInclude Include="imconfig.h">
       <Filter>Pliki nagłówkowe\imgui</Filter>
     </ClInclude>
@@ -112,6 +112,12 @@
     </ClInclude>
     <ClInclude Include="imgui_impl_opengl3.h">
       <Filter>Pliki nagłówkowe\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiFileDialog.h">
+      <Filter>Pliki nagłówkowe\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="TPPcamera.h">
+      <Filter>Pliki nagłówkowe\Objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

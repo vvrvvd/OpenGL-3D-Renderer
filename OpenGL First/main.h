@@ -13,12 +13,12 @@ void init_glad();
 void config_openGL();
 void init_imgui();
 void draw_UI();
+void draw_file_chooser();
 void load_shaders();
-void dispose_shaders();
 void load_scene();
-void dispose_scene();
+void dispose();
 void init_camera_frustum_buffers();
-void update_frustum_points(glm::mat4 model, glm::mat4 view, glm::mat4 projection);
+void update_frustum_points();
 
 //Core loop
 void core_loop();
@@ -54,3 +54,13 @@ unsigned int cameraVAO;
 unsigned int cameraVBO;
 unsigned int cameraEBO;
 float frustumVertices[24];
+
+//Camera parameters
+float cameraCenter[3];
+float cameraPosition[3];
+std::string filePathName = "";
+std::string path = "";
+std::string fileName = "";
+std::string cameraPath = "";
+std::string filter = "";
+bool openSceneFileDialog = false;

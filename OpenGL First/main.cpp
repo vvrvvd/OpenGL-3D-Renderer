@@ -8,7 +8,6 @@ int main()
 	config_openGL();
 	init_imgui();
 
-	load_scene();
 	load_shaders();
 
 	init_camera_frustum_buffers();
@@ -21,8 +20,7 @@ int main()
 
 	ImGui_ImplGlfw_Shutdown();
 
-	dispose_shaders();
-	dispose_scene();
+	dispose();
 
 	glfwTerminate();
 	return 0;
@@ -65,12 +63,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	lastX = xpos;
 	lastY = ypos;
 
-	camera.ProcessMouseMovement(xoffset, yoffset);
+	camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera->ProcessMouseScroll(yoffset);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -108,19 +106,88 @@ void draw_UI()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	static float f = 0.0f;
-	static int counter = 0;
 
-	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-		counter++;
-	ImGui::SameLine();
-	ImGui::Text("counter = %d", counter);
+	ImGui::BeginMainMenuBar();
+		if(ImGui::MenuItem("Load"))
+		{
+			openSceneFileDialog = true;
+		}
+		
+		if (ImGui::BeginMenu("Camera"))
+		{
+			if (scene!=NULL)
+			{
 
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::End();
+				if (ImGui::InputFloat3("Center", cameraCenter))
+					tppCamera->SetCenter(glm::vec3(cameraCenter[0], cameraCenter[1], cameraCenter[2]));
+				
+				if (ImGui::InputFloat3("Position", cameraPosition))
+				{
+					tppCamera->SetPosition(glm::vec3(cameraPosition[0], cameraPosition[1], cameraPosition[2]));
+				}
+
+				ImGui::Text("FOV");
+				ImGui::SliderFloat("", &camera->Zoom, 1.0f, 89.0f);
+				if (ImGui::Button("Save camera"))
+				{
+					!tppCamera->SaveToFile();
+				}
+			}
+			ImGui::EndMenu();
+		}
+	ImGui::EndMainMenuBar();
+
+
+	if (openSceneFileDialog)
+		draw_file_chooser();
+	
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void draw_file_chooser()
+{
+	std::string extensions = "";
+	std::string title = "Choose File";
+
+	if (openSceneFileDialog)
+	{
+		title = "Choose scene file";
+		extensions = ".brp\0\0";
+	}
+
+	if (ImGuiFileDialog::Instance()->FileDialog(title.c_str(), extensions.c_str(), ".", ""))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk == true)
+		{
+			filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+			path = ImGuiFileDialog::Instance()->GetCurrentPath();
+			fileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
+			cameraPath = fileName.substr(0, fileName.length() - 3).append("cam");
+			filter = ImGuiFileDialog::Instance()->GetCurrentFilter();
+
+			if (openSceneFileDialog)
+			{
+				load_scene();
+				cameraCenter[0] = tppCamera->CameraCenter.x;
+				cameraCenter[1] = tppCamera->CameraCenter.y;
+				cameraCenter[2] = tppCamera->CameraCenter.z;
+				cameraPosition[0] = tppCamera->Position.x;
+				cameraPosition[1] = tppCamera->Position.y;
+				cameraPosition[2] = tppCamera->Position.z;
+			}
+		}
+		else
+		{
+			filePathName = "";
+			path = "";
+			fileName = "";
+			cameraPath = "";
+			filter = "";
+		}
+	
+		openSceneFileDialog = false;
+	}
 }
 
 void load_shaders()
@@ -129,20 +196,35 @@ void load_shaders()
 	frustumShader = new Shader("vertexTexture.vert","frustum.frag");
 }
 
-void dispose_shaders()
-{
-	delete ourShader;
-	delete frustumShader;
-}
-
 void load_scene()
 {
-	scene = new Scene(SCENE_PATH);
+	if (scene != NULL)
+		delete scene;
+
+	if (tppCamera != NULL)
+		delete tppCamera;
+	
+	scene = new Scene(fileName.c_str());
+	tppCamera = new TPPcamera(cameraPath.c_str());
+	camera = tppCamera;
 }
 
-void dispose_scene()
+void dispose()
 {
-	delete scene;
+	if(scene!=NULL)
+		delete scene;
+
+	if (tppCamera != NULL)
+		delete tppCamera;
+
+	if (fpsCamera != NULL)
+		delete fpsCamera;
+
+	if(ourShader != NULL)
+		delete ourShader;
+
+	if(frustumShader != NULL)
+		delete frustumShader;
 }
 
 void init_camera_frustum_buffers()
@@ -184,8 +266,8 @@ void init_camera_frustum_buffers()
 void update_frustum_points()
 {
 	glm::mat4 model = glm::mat4();
-	glm::mat4 view = camera.GetViewMatrix();
-	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FRUSTUM_SIZE);
+	glm::mat4 view = camera->GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FRUSTUM_SIZE);
 
 	glm::vec4 screenVertices[8];
 	screenVertices[0] = glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
@@ -229,32 +311,36 @@ void update_time()
 void core_loop()
 {
 	process_input(window);
-	update_frustum_points();
 
 	//rendering
 	glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glm::mat4 frustum_model = glm::mat4();
+	if (scene != NULL)
+	{
+		update_frustum_points();
 
-	//left top
-	glViewport(0, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
-	draw_perspective_view();
+		glm::mat4 frustum_model = glm::mat4();
 
-	//left bottom
-	glViewport(0, 0, WIDTH*0.5, HEIGHT*0.5);
-	draw_ortho(Scene::TOP);
-	draw_frustum(frustum_model, scene->GetOrthoView(Scene::TOP), scene->GetOrtho(RATIO, Scene::TOP));
+		//left top
+		glViewport(0, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
+		draw_perspective_view();
 
-	//right bottom
-	glViewport(WIDTH*0.5, 0, WIDTH*0.5, HEIGHT*0.5);
-	draw_ortho(Scene::FRONT);
-	draw_frustum(frustum_model, scene->GetOrthoView(Scene::FRONT), scene->GetOrtho(RATIO, Scene::FRONT));
+		//left bottom
+		glViewport(0, 0, WIDTH*0.5, HEIGHT*0.5);
+		draw_ortho(Scene::TOP);
+		draw_frustum(frustum_model, scene->GetOrthoView(Scene::TOP), scene->GetOrtho(RATIO, Scene::TOP));
 
-	//right top
-	glViewport(WIDTH*0.5, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
-	draw_ortho(Scene::RIGHT);
-	draw_frustum(frustum_model, scene->GetOrthoView(Scene::RIGHT), scene->GetOrtho(RATIO, Scene::RIGHT));
+		//right bottom
+		glViewport(WIDTH*0.5, 0, WIDTH*0.5, HEIGHT*0.5);
+		draw_ortho(Scene::FRONT);
+		draw_frustum(frustum_model, scene->GetOrthoView(Scene::FRONT), scene->GetOrtho(RATIO, Scene::FRONT));
+
+		//right top
+		glViewport(WIDTH*0.5, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
+		draw_ortho(Scene::RIGHT);
+		draw_frustum(frustum_model, scene->GetOrthoView(Scene::RIGHT), scene->GetOrtho(RATIO, Scene::RIGHT));
+	}
 
 	glViewport(0, 0, WIDTH, HEIGHT); //restore default
 	draw_UI();
@@ -270,13 +356,13 @@ void process_input(GLFWwindow* window)
 
 	float cameraSpeed = 2.5f * deltaTime; // adjust accordingly
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
+		camera->ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
+		camera->ProcessKeyboard(BACKWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
+		camera->ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
+		camera->ProcessKeyboard(RIGHT, deltaTime);
 
 	if (last_rmb_state == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
@@ -291,6 +377,14 @@ void process_input(GLFWwindow* window)
 		glfwSetCursorPosCallback(window, NULL);
 		last_rmb_state = GLFW_RELEASE;
 	}
+
+	if (tppCamera != NULL)
+	{
+		cameraPosition[0] = tppCamera->Position.x;
+		cameraPosition[1] = tppCamera->Position.y;
+		cameraPosition[2] = tppCamera->Position.z;
+	}
+	
 }
 
 void draw_frustum(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
@@ -307,8 +401,8 @@ void draw_frustum(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
 void draw_perspective_view()
 {
 	glm::mat4 model = glm::mat4();
-	glm::mat4 view = camera.GetViewMatrix();
-	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FAR_PLANE);
+	glm::mat4 view = camera->GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FAR_PLANE);
 	ourShader->use();
 	ourShader->setMat4("model", model);
 	ourShader->setMat4("view", view);

@@ -13,12 +13,14 @@
 class TPPcamera : public Camera
 {
 public:
+	const char* path;
 	glm::vec3 CameraCenter;
 	float angleAroundPlayer;
 	float Distance;
 
 	TPPcamera(const char* cameraPath, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f))
 	{
+		path = cameraPath;
 		MovementSpeed = SPEED;
 		MouseSensitivity = SENSITIVITY;
 		std::ifstream cameraFile;
@@ -73,9 +75,40 @@ public:
 		updateCameraVectors();
 	}
 
-	void SetCameraCenter(glm::vec3 cameraCenter)
+	bool SaveToFile()
+	{
+		std::ofstream cameraFile;
+
+		cameraFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+
+		try
+		{
+			cameraFile.open(path);
+			cameraFile << Position.x << " " << Position.y << " " << Position.z << std::endl;
+			cameraFile << CameraCenter.x << " " << CameraCenter.y << " " << CameraCenter.z << std::endl;
+			cameraFile << Zoom << std::endl;
+			cameraFile.close();
+		}
+		catch (std::ifstream::failure e)
+		{
+			std::cout << "ERROR::CAMERA::FILE_NOT_SUCCESFULLY_SAVED" << std::endl;
+			return false;
+		}
+
+		return true;
+	}
+
+	void SetCenter(glm::vec3 cameraCenter)
 	{
 		CameraCenter = cameraCenter;
+		updateCameraVectors();
+	}
+
+	virtual void SetPosition(glm::vec3 pos)
+	{
+		Position = pos;
+		Distance = glm::length(CameraCenter - Position);
+		Front = glm::normalize(CameraCenter - Position);
 		calculateStartPitchAndAngle();
 		updateCameraVectors();
 	}
@@ -127,12 +160,12 @@ public:
 	// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 	void ProcessMouseScroll(float yoffset)
 	{
-		if (Zoom >= 1.0f && Zoom <= 45.0f)
+		if (Zoom >= 1.0f && Zoom <= 89.0f)
 			Zoom -= yoffset;
 		if (Zoom <= 1.0f)
 			Zoom = 1.0f;
-		if (Zoom >= 45.0f)
-			Zoom = 45.0f;
+		if (Zoom >= 89.0f)
+			Zoom = 89.0f;
 	}
 
 private:
@@ -141,7 +174,9 @@ private:
 	{
 		Pitch = glm::degrees(asinf(-Front.y));
 		Pitch = glm::mod(Pitch, 360.0f);
-		angleAroundPlayer = glm::degrees(asin((-Position.x + CameraCenter.x) / (Distance*cos(glm::radians(Pitch)))));
+		float sinX = (-Position.x + CameraCenter.x) / (Distance*cos(glm::radians(Pitch)));
+		float cosX = (Position.z - CameraCenter.z) / (Distance*cos(glm::radians(Pitch)));
+		angleAroundPlayer = glm::degrees(atan2f(sinX, cosX));
 		angleAroundPlayer = glm::mod(angleAroundPlayer, 360.0f);
 	}
 
@@ -150,9 +185,8 @@ private:
 	{
 		float horDistance = Distance * cos(glm::radians(Pitch));
 		float vertDistance = Distance * sin(glm::radians(Pitch));
-		float theta = angleAroundPlayer;
-		float offsetX = (horDistance * sin(glm::radians(theta)));
-		float offsetZ = (horDistance * cos(glm::radians(theta)));
+		float offsetX = (horDistance * sin(glm::radians(angleAroundPlayer)));
+		float offsetZ = (horDistance * cos(glm::radians(angleAroundPlayer)));
 		Position.x = CameraCenter.x - offsetX;
 		Position.z = CameraCenter.z + offsetZ;
 		Position.y = CameraCenter.y + vertDistance;

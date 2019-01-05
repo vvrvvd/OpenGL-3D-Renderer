@@ -42,7 +42,7 @@ private:
 
 	float minCoords[VERTEX_SIZE];
 	float maxCoords[VERTEX_SIZE];
-	float center[VERTEX_SIZE];
+	float cameraCenter[VERTEX_SIZE];
 
 	std::stringstream sceneDataStream;
 	unsigned int VBO, VAO, EBO;
@@ -76,7 +76,7 @@ public:
 
 	float* GetCenter()
 	{
-		return center;
+		return cameraCenter;
 	}
 
 	glm::mat4 GetOrtho(float ratio, Side side)
@@ -92,8 +92,8 @@ public:
 			{
 				float minW = minCoords[0];
 				float maxW = maxCoords[0];
-				float minH = center[1] + minW * ratioHeight;
-				float maxH = center[1] + maxW * ratioHeight;
+				float minH = cameraCenter[1] + minW * ratioHeight;
+				float maxH = cameraCenter[1] + maxW * ratioHeight;
 				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1]))/2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
@@ -103,8 +103,8 @@ public:
 			{
 				float minH = minCoords[1];
 				float maxH = maxCoords[1];
-				float minW = center[0] + minH * ratioWidth;
-				float maxW = center[0] + maxH * ratioWidth;
+				float minW = cameraCenter[0] + minH * ratioWidth;
+				float maxW = cameraCenter[0] + maxH * ratioWidth;
 				float offsetW = ((minW + maxW) - (minCoords[0] + maxCoords[0])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
@@ -118,8 +118,8 @@ public:
 			{
 				float minW = minCoords[2];
 				float maxW = maxCoords[2];
-				float minH = center[0] + minW * ratioHeight;
-				float maxH = center[0] + maxW * ratioHeight;
+				float minH = cameraCenter[0] + minW * ratioHeight;
+				float maxH = cameraCenter[0] + maxW * ratioHeight;
 				float offsetH = ((minH + maxH) - (minCoords[0] + maxCoords[0])) / 2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
@@ -129,8 +129,8 @@ public:
 			{
 				float minH = minCoords[0];
 				float maxH = maxCoords[0];
-				float minW = center[2] + minH * ratioWidth;
-				float maxW = center[2] + maxH * ratioWidth;
+				float minW = cameraCenter[2] + minH * ratioWidth;
+				float maxW = cameraCenter[2] + maxH * ratioWidth;
 				float offsetW = ((minW + maxW) - (minCoords[2] + maxCoords[2])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
@@ -144,8 +144,8 @@ public:
 			{
 				float minH = minCoords[1];
 				float maxH = maxCoords[1];
-				float minW = center[2] + minH * ratioWidth;
-				float maxW = center[2] + maxH * ratioWidth;
+				float minW = cameraCenter[2] + minH * ratioWidth;
+				float maxW = cameraCenter[2] + maxH * ratioWidth;
 				float offsetW = ((minW + maxW) - (minCoords[2] + maxCoords[2])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
@@ -155,8 +155,8 @@ public:
 			{
 				float minW = minCoords[2];
 				float maxW = maxCoords[2];
-				float minH = center[1] + minW * ratioHeight;
-				float maxH = center[1] + maxW * ratioHeight;
+				float minH = cameraCenter[1] + minW * ratioHeight;
+				float maxH = cameraCenter[1] + maxW * ratioHeight;
 				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1])) / 2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
@@ -300,9 +300,9 @@ private:
 		maxCoords[1] = find_max_vertex_coord(Y);
 		maxCoords[2] = find_max_vertex_coord(Z);
 
-		center[0] = (minCoords[0] + maxCoords[0]) / 2.0f;
-		center[1] = (minCoords[1] + maxCoords[2]) / 2.0f;
-		center[2] = (minCoords[2] + maxCoords[2]) / 2.0f;
+		cameraCenter[0] = (minCoords[0] + maxCoords[0]) / 2.0f;
+		cameraCenter[1] = (minCoords[1] + maxCoords[2]) / 2.0f;
+		cameraCenter[2] = (minCoords[2] + maxCoords[2]) / 2.0f;
 	}
 
 	float find_min_vertex_coord(unsigned int axis)

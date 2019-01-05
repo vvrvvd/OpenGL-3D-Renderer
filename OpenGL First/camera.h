@@ -64,5 +64,6 @@ public:
 
 	// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 	virtual void ProcessMouseScroll(float yoffset) = 0;
+
 };
 #endif
