@@ -12,6 +12,7 @@
 #include "image_loader.h"
 #include "Quad.h"
 #include "Scene.h"
+#include "matrix_utils.h"
 #include "TPPcamera.h"
 #include "FPScamera.h"
 #include "imgui.h"
