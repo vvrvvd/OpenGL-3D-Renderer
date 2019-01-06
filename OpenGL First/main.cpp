@@ -68,7 +68,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera->ProcessMouseScroll(yoffset);
+	if(camera!=NULL)
+		camera->ProcessMouseScroll(yoffset);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -130,7 +131,7 @@ void draw_UI()
 				ImGui::SliderFloat("", &camera->Zoom, 1.0f, 89.0f);
 				if (ImGui::Button("Save camera"))
 				{
-					!tppCamera->SaveToFile();
+					tppCamera->SaveToFile();
 				}
 			}
 			ImGui::EndMenu();
@@ -267,7 +268,7 @@ void update_frustum_points()
 {
 	glm::mat4 model = glm::mat4();
 	glm::mat4 view = camera->GetViewMatrix();
-	glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FRUSTUM_SIZE);
+	glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FRUSTUM_FAR_PLANE);
 
 	glm::vec4 screenVertices[8];
 	screenVertices[0] = glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
@@ -402,7 +403,7 @@ void draw_perspective_view()
 {
 	glm::mat4 model = glm::mat4();
 	glm::mat4 view = camera->GetViewMatrix();
-	glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FAR_PLANE);
+	glm::mat4 projection = PerspectiveMatrix(glm::radians(camera->Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FAR_PLANE);
 	ourShader->use();
 	ourShader->setMat4("model", model);
 	ourShader->setMat4("view", view);

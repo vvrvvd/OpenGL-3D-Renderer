@@ -101,7 +101,6 @@ public:
 	void SetCenter(glm::vec3 cameraCenter)
 	{
 		CameraCenter = cameraCenter;
-		updateCameraVectors();
 	}
 
 	virtual void SetPosition(glm::vec3 pos)

@@ -1,10 +1,11 @@
 #include <iostream>
 #include <sstream>
 #include "string_utils.h"
+#include "matrix_utils.h"
 
 const unsigned int VERTEX_SIZE = 3;
 const unsigned int INDEX_SIZE = 3;
-const float ORTHO_OFFSET = 1.0f;
+const float ORTHO_OFFSET = 0.5f;
 
 class Scene
 {
@@ -97,7 +98,7 @@ public:
 				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1]))/2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
-				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET*ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[2] - 100.0f, maxCoords[2] + 100.0f);
+				return OrthographicMatrix(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET*ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[2] - 100.0f, maxCoords[2] + 100.0f);
 			}
 			else
 			{
@@ -108,7 +109,7 @@ public:
 				float offsetW = ((minW + maxW) - (minCoords[0] + maxCoords[0])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
-				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[2] - 100.0f, maxCoords[2] + 100.0f);
+				return OrthographicMatrix(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[2] - 100.0f, maxCoords[2] + 100.0f);
 			}
 		}
 		else if (side == TOP || side == BOTTOM)
@@ -123,7 +124,7 @@ public:
 				float offsetH = ((minH + maxH) - (minCoords[0] + maxCoords[0])) / 2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
-				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[1] - 100.0f, maxCoords[1] + 100.0f);
+				return OrthographicMatrix(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[1] - 100.0f, maxCoords[1] + 100.0f);
 			}
 			else
 			{
@@ -134,7 +135,7 @@ public:
 				float offsetW = ((minW + maxW) - (minCoords[2] + maxCoords[2])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
-				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[1] - 100.0f, maxCoords[1] + 100.0f);
+				return OrthographicMatrix(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[1] - 100.0f, maxCoords[1] + 100.0f);
 			}
 		}
 		else if (side == FRONT || side == BACK)
@@ -149,7 +150,7 @@ public:
 				float offsetW = ((minW + maxW) - (minCoords[2] + maxCoords[2])) / 2.0f;
 				minW -= offsetW;
 				maxW -= offsetW;
-				return glm::ortho(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[0] - 100.0f, maxCoords[0] + 100.0f);
+				return OrthographicMatrix(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET * ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[0] - 100.0f, maxCoords[0] + 100.0f);
 			}
 			else
 			{
@@ -160,7 +161,7 @@ public:
 				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1])) / 2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
-				return glm::ortho(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[0] - 100.0f, maxCoords[0] + 100.0f);
+				return OrthographicMatrix(minW - ORTHO_OFFSET * ratioWidth, maxW + ORTHO_OFFSET * ratioWidth, minH - ORTHO_OFFSET, maxH + ORTHO_OFFSET, minCoords[0] - 100.0f, maxCoords[0] + 100.0f);
 			}
 		}
 
@@ -171,17 +172,17 @@ public:
 	{
 		switch (side) {
 			case LEFT:
-				return glm::lookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+				return LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
 			case RIGHT:
-				return glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+				return LookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
 			case TOP:
-				return glm::lookAt(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
+				return LookAt(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
 			case BOTTOM:
-				return glm::lookAt(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
+				return LookAt(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
 			case FRONT:
-				return glm::lookAt(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+				return LookAt(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
 			case BACK:
-				return glm::lookAt(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+				return LookAt(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
 			}
 
 		return glm::mat4();
@@ -244,7 +245,7 @@ private:
 				{
 					if (loadingState == LOOK_FOR_VERTICES)
 					{
-						if (words[i]._Equal(VERTICES_HEADER))
+						if (words[i] == (VERTICES_HEADER))
 						{
 							loadingState = 1;
 						}
@@ -258,7 +259,7 @@ private:
 					}
 					else if (loadingState == LOAD_VERTICES_ARRAY)
 					{
-						if (words[i]._Equal(INDICES_HEADER))
+						if (words[i] == (INDICES_HEADER))
 						{
 							loadingState = ASSIGN_INDICES_ARRAY;
 						}
