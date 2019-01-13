@@ -6,6 +6,7 @@
 const unsigned int VERTEX_SIZE = 3;
 const unsigned int INDEX_SIZE = 3;
 const float ORTHO_OFFSET = 0.5f;
+const glm::vec3 DEFAULT_COLOR = glm::vec3(1.0f, 0.0f, 0.0f);
 
 class Scene
 {
@@ -24,6 +25,10 @@ public:
 private:
 	const std::string VERTICES_HEADER = "points_count";
 	const std::string INDICES_HEADER = "triangles_count";
+	const std::string PARTS_HEADER = "parts_count";
+	const std::string MATERIALS_HEADER = "materials_count";
+	const std::string MATERIAL_NAME_HEADER = "mat_name";
+	const std::string MATERIAL_COLOR_HEADER = "rgb";
 
 	const unsigned int X = 0;
 	const unsigned int Y = 1;
@@ -34,12 +39,28 @@ private:
 	const unsigned int LOAD_VERTICES_ARRAY = 2;
 	const unsigned int ASSIGN_INDICES_ARRAY = 3;
 	const unsigned int LOAD_INDICES_ARRAY = 4;
+	const unsigned int ASSIGN_PARTS_ARRAY = 5;
+	const unsigned int LOAD_TRIANGLES_PARTS_ARRAY = 6;
+	const unsigned int ASSIGN_MATERIALS_ARRAY = 7;
+	const unsigned int LOAD_MATERIALS_ARRAY = 8;
+	const unsigned int LOAD_PARTS_ARRAY = 9; 
 
 	float* vertices;
 	unsigned int vertices_count;
 
 	unsigned int* indices;
 	unsigned int indices_count;
+	
+	unsigned int* triangles_parts;
+	unsigned int triangles_count;
+
+	unsigned int* parts;
+	unsigned int parts_count;
+
+	glm::vec3** materials_colors;
+	unsigned int materials_count;
+
+	std::vector<std::string> materials_names;
 
 	float minCoords[VERTEX_SIZE];
 	float maxCoords[VERTEX_SIZE];
@@ -58,10 +79,22 @@ public:
 		init_opengl_buffors();
 	}
 
-	void Draw()
+	void Draw(Shader* shader)
 	{
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, 0);
+		if (materials_count > 0)
+		{
+			for (unsigned int i = 0; i < indices_count / INDEX_SIZE; ++i)
+			{
+				shader->setVec3("color", *(materials_colors[parts[triangles_parts[i]]]));
+				glDrawElements(GL_TRIANGLES, INDEX_SIZE, GL_UNSIGNED_INT, (void*)(i*INDEX_SIZE*sizeof(unsigned int)));
+			}
+		}
+		else
+		{
+			shader->setVec3("color", DEFAULT_COLOR);
+			glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, (void*)0);
+		}
 		glBindVertexArray(0);
 	}
 
@@ -207,6 +240,27 @@ public:
 			indices = NULL;
 		}
 
+		if (triangles_parts != NULL)
+		{
+			delete triangles_parts;
+			triangles_parts = NULL;
+		}
+
+		if (parts != NULL)
+		{
+			delete parts;
+			parts = NULL;
+		}
+
+		if (materials_colors != NULL)
+		{
+			for (int i = 0; i < materials_count; ++i)
+				delete[] materials_colors[i];
+
+			delete[] materials_colors;
+			materials_colors = NULL;
+		}
+
 		glDeleteVertexArrays(1, &VAO);
 		glDeleteBuffers(1, &VBO);
 		glDeleteBuffers(1, &EBO);
@@ -272,18 +326,91 @@ private:
 					}
 					else if (loadingState == ASSIGN_INDICES_ARRAY)
 					{
-						indices_count = std::stoul(words[i]) * INDEX_SIZE;
+						triangles_count = std::stoul(words[i]);
+						indices_count = triangles_count * INDEX_SIZE;
 						indices = new unsigned int[indices_count];
 						loadingState = LOAD_INDICES_ARRAY;
 						index = 0;
 					}
 					else if (loadingState == LOAD_INDICES_ARRAY)
 					{
-						if (index < indices_count)
+						if (words[i] == (PARTS_HEADER))
+						{
+							loadingState = ASSIGN_PARTS_ARRAY;
+						}
+						else if (index < indices_count)
 						{
 							float element = std::stof(words[i]);
 							indices[index] = element;
 							index++;
+						}
+					}
+					else if (loadingState == ASSIGN_PARTS_ARRAY)
+					{
+						parts_count = std::stoul(words[i]);
+						parts = new unsigned int[parts_count];
+						triangles_parts = new unsigned int[triangles_count];
+						loadingState = LOAD_TRIANGLES_PARTS_ARRAY;
+						index = 0;
+					}
+					else if (loadingState == LOAD_TRIANGLES_PARTS_ARRAY)
+					{
+						if (words[i] == (MATERIALS_HEADER))
+						{
+							loadingState = ASSIGN_MATERIALS_ARRAY;
+							index = 0;
+						}
+						else if (index < triangles_count)
+						{
+							float element = std::stoul(words[i]);
+							triangles_parts[index] = element;
+							index++;
+						}
+					}
+					else if (loadingState == ASSIGN_MATERIALS_ARRAY)
+					{
+						materials_count = std::stoul(words[i]);
+						materials_colors = new glm::vec3*[materials_count];
+						loadingState = LOAD_MATERIALS_ARRAY;
+					}
+					else if (loadingState == LOAD_MATERIALS_ARRAY)
+					{
+						if (words[i] == MATERIAL_NAME_HEADER)
+						{
+							materials_names.push_back(words[i + 1]);
+						}
+						else if (words[i] == MATERIAL_COLOR_HEADER)
+						{
+							materials_colors[index] = new glm::vec3();
+							materials_colors[index]->x = std::stof(words[i + 1]);
+							materials_colors[index]->y = std::stof(words[i + 2]);
+							materials_colors[index]->z = std::stof(words[i + 3]);
+							index++;
+							i += 3;
+						}
+						if (index >= materials_count && words.size() == 2 && words[0] == "0")
+						{
+							loadingState = LOAD_PARTS_ARRAY;
+							index = 0;
+							i--;
+						}
+					}
+					else if (loadingState == LOAD_PARTS_ARRAY)
+					{
+						if (index < parts_count && words.size() == 2)
+						{
+							unsigned int name_ind = -1;
+							for (unsigned int k = 0; k < materials_names.size(); k++)
+							{
+								if (materials_names[k] == words[i + 1])
+								{
+									name_ind = k;
+									k = materials_names.size() + 1;
+								}
+							}
+							parts[index] = name_ind;
+							index++;
+							i += 1;
 						}
 					}
 				}

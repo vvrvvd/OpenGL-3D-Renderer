@@ -88,6 +88,11 @@ void init_glad()
 void config_openGL()
 {
 	glViewport(0, 0, WIDTH, HEIGHT);
+
+	//Z-BUFFER
+	glEnable(GL_DEPTH_TEST);
+
+	//POLYGON-MODE
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
@@ -193,7 +198,7 @@ void draw_file_chooser()
 
 void load_shaders()
 {
-	ourShader = new Shader("vertexTexture.vert", "fragmentTexture.frag");
+	sceneShader = new Shader("vertexTexture.vert", "fragmentTexture.frag");
 	frustumShader = new Shader("vertexTexture.vert","frustum.frag");
 }
 
@@ -221,8 +226,8 @@ void dispose()
 	if (fpsCamera != NULL)
 		delete fpsCamera;
 
-	if(ourShader != NULL)
-		delete ourShader;
+	if(sceneShader != NULL)
+		delete sceneShader;
 
 	if(frustumShader != NULL)
 		delete frustumShader;
@@ -315,7 +320,9 @@ void core_loop()
 
 	//rendering
 	glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.a);
-	glClear(GL_COLOR_BUFFER_BIT);
+
+	//Z-BUFFER
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (scene != NULL)
 	{
@@ -404,11 +411,11 @@ void draw_perspective_view()
 	glm::mat4 model = glm::mat4();
 	glm::mat4 view = camera->GetViewMatrix();
 	glm::mat4 projection = PerspectiveMatrix(glm::radians(camera->Zoom), (float)WIDTH / (float)HEIGHT, NEAR_PLANE, FAR_PLANE);
-	ourShader->use();
-	ourShader->setMat4("model", model);
-	ourShader->setMat4("view", view);
-	ourShader->setMat4("projection", projection);
-	scene->Draw();
+	sceneShader->use();
+	sceneShader->setMat4("model", model);
+	sceneShader->setMat4("view", view);
+	sceneShader->setMat4("projection", projection);
+	scene->Draw(sceneShader);
 }
 
 void draw_ortho(Scene::Side side)
@@ -416,10 +423,10 @@ void draw_ortho(Scene::Side side)
 	glm::mat4 model = glm::mat4();
 	glm::mat4 view = scene->GetOrthoView(side);
 	glm::mat4 projection = scene->GetOrtho(RATIO, side);
-	ourShader->use();
-	ourShader->setMat4("model", model);
-	ourShader->setMat4("view", view);
-	ourShader->setMat4("projection", projection);
-	scene->Draw();
+	sceneShader->use();
+	sceneShader->setMat4("model", model);
+	sceneShader->setMat4("view", view);
+	sceneShader->setMat4("projection", projection);
+	scene->Draw(sceneShader);
 }
 

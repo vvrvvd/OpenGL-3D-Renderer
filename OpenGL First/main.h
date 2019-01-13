@@ -44,7 +44,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 //Dynamic objects
-Shader* ourShader;
+Shader* sceneShader;
 Shader* frustumShader;
 Scene* scene;
 
