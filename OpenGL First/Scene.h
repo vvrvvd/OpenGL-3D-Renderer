@@ -6,7 +6,7 @@
 const unsigned int VERTEX_SIZE = 3;
 const unsigned int INDEX_SIZE = 3;
 const float ORTHO_OFFSET = 0.5f;
-const glm::vec3 DEFAULT_COLOR = glm::vec3(1.0f, 0.0f, 0.0f);
+const Material DEFAULT_MATERIAL;
 
 class Scene
 {
@@ -43,22 +43,24 @@ private:
 	const unsigned int LOAD_TRIANGLES_PARTS_ARRAY = 6;
 	const unsigned int ASSIGN_MATERIALS_ARRAY = 7;
 	const unsigned int LOAD_MATERIALS_ARRAY = 8;
-	const unsigned int LOAD_PARTS_ARRAY = 9; 
+	const unsigned int LOAD_PARTS_ARRAY = 9;
 
 	float* vertices;
 	unsigned int vertices_count;
 
 	unsigned int* indices;
 	unsigned int indices_count;
-	
+
 	unsigned int* triangles_parts;
 	unsigned int triangles_count;
 
 	unsigned int* parts;
 	unsigned int parts_count;
 
-	glm::vec3** materials_colors;
+	Material* materials;
 	unsigned int materials_count;
+	unsigned int** parts_indices;
+	unsigned int* triangles_parts_count;
 
 	std::vector<std::string> materials_names;
 
@@ -67,7 +69,8 @@ private:
 	float cameraCenter[VERTEX_SIZE];
 
 	std::stringstream sceneDataStream;
-	unsigned int VBO, VAO, EBO;
+	unsigned int VBO, VAO;
+	unsigned int* EBO;
 
 public:
 
@@ -82,17 +85,19 @@ public:
 	void Draw(Shader* shader)
 	{
 		glBindVertexArray(VAO);
-		if (materials_count > 0)
+		if (parts_count > 0)
 		{
-			for (unsigned int i = 0; i < indices_count / INDEX_SIZE; ++i)
+			for (unsigned int i = 0; i < parts_count; ++i)
 			{
-				shader->setVec3("color", *(materials_colors[parts[triangles_parts[i]]]));
-				glDrawElements(GL_TRIANGLES, INDEX_SIZE, GL_UNSIGNED_INT, (void*)(i*INDEX_SIZE*sizeof(unsigned int)));
+				shader->setMaterial(materials[parts[i]]);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
+				glDrawElements(GL_TRIANGLES, triangles_parts_count[i] * INDEX_SIZE, GL_UNSIGNED_INT, (void*)0);
+				//glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, (void*)(i*INDEX_SIZE*sizeof(unsigned int)));
 			}
 		}
 		else
 		{
-			shader->setVec3("color", DEFAULT_COLOR);
+			shader->setMaterial(DEFAULT_MATERIAL);
 			glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, (void*)0);
 		}
 		glBindVertexArray(0);
@@ -128,7 +133,7 @@ public:
 				float maxW = maxCoords[0];
 				float minH = cameraCenter[1] + minW * ratioHeight;
 				float maxH = cameraCenter[1] + maxW * ratioHeight;
-				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1]))/2.0f;
+				float offsetH = ((minH + maxH) - (minCoords[1] + maxCoords[1])) / 2.0f;
 				minH -= offsetH;
 				maxH -= offsetH;
 				return OrthographicMatrix(minW - ORTHO_OFFSET, maxW + ORTHO_OFFSET, minH - ORTHO_OFFSET*ratioHeight, maxH + ORTHO_OFFSET * ratioHeight, minCoords[2] - 100.0f, maxCoords[2] + 100.0f);
@@ -204,19 +209,19 @@ public:
 	glm::mat4 GetOrthoView(Side side)
 	{
 		switch (side) {
-			case LEFT:
-				return LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
-			case RIGHT:
-				return LookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
-			case TOP:
-				return LookAt(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
-			case BOTTOM:
-				return LookAt(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
-			case FRONT:
-				return LookAt(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
-			case BACK:
-				return LookAt(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
-			}
+		case LEFT:
+			return LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+		case RIGHT:
+			return LookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+		case TOP:
+			return LookAt(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
+		case BOTTOM:
+			return LookAt(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
+		case FRONT:
+			return LookAt(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+		case BACK:
+			return LookAt(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+		}
 
 		return glm::mat4();
 	}
@@ -246,24 +251,44 @@ public:
 			triangles_parts = NULL;
 		}
 
+		if (triangles_parts_count != NULL)
+		{
+			delete triangles_parts_count;
+			triangles_parts_count = NULL;
+		}
+
 		if (parts != NULL)
 		{
 			delete parts;
 			parts = NULL;
 		}
 
-		if (materials_colors != NULL)
+		if (materials != NULL)
 		{
-			for (int i = 0; i < materials_count; ++i)
-				delete[] materials_colors[i];
+			delete[] materials;
+			materials = NULL;
+		}
 
-			delete[] materials_colors;
-			materials_colors = NULL;
+		if (parts_count != NULL)
+		{
+			for (unsigned int i = 0; i < parts_count; i++)
+				delete parts_indices[i];
+
+			delete parts_indices;
+			parts_indices = NULL;
 		}
 
 		glDeleteVertexArrays(1, &VAO);
 		glDeleteBuffers(1, &VBO);
-		glDeleteBuffers(1, &EBO);
+
+		if (EBO != NULL)
+		{
+			for (unsigned int i = 0; i < parts_count; i++)
+				glDeleteBuffers(1, &EBO[i]);
+
+			delete EBO;
+			EBO = NULL;
+		}
 	}
 
 private:
@@ -289,13 +314,13 @@ private:
 	{
 		unsigned int loadingState = LOOK_FOR_VERTICES;
 		unsigned int index = 0;
-		
+
 		std::string line;
 		while (std::getline(sceneDataStream, line)) {
 			std::vector<std::string> words = split(line, " ");
 			for (unsigned int i = 0; i < words.size(); i++)
 			{
-				if (words[i].substr(0, 2) !=  "//")
+				if (words[i].substr(0, 2) != "//")
 				{
 					if (loadingState == LOOK_FOR_VERTICES)
 					{
@@ -317,7 +342,7 @@ private:
 						{
 							loadingState = ASSIGN_INDICES_ARRAY;
 						}
-						else if(index < vertices_count)
+						else if (index < vertices_count)
 						{
 							float element = std::stof(words[i]);
 							vertices[index] = element;
@@ -370,21 +395,19 @@ private:
 					else if (loadingState == ASSIGN_MATERIALS_ARRAY)
 					{
 						materials_count = std::stoul(words[i]);
-						materials_colors = new glm::vec3*[materials_count];
+						materials = new Material[materials_count];
 						loadingState = LOAD_MATERIALS_ARRAY;
 					}
 					else if (loadingState == LOAD_MATERIALS_ARRAY)
 					{
 						if (words[i] == MATERIAL_NAME_HEADER)
 						{
+							materials[index].name = words[i + 1];
 							materials_names.push_back(words[i + 1]);
 						}
 						else if (words[i] == MATERIAL_COLOR_HEADER)
 						{
-							materials_colors[index] = new glm::vec3();
-							materials_colors[index]->x = std::stof(words[i + 1]);
-							materials_colors[index]->y = std::stof(words[i + 2]);
-							materials_colors[index]->z = std::stof(words[i + 3]);
+							materials[index].color = glm::vec3(std::stof(words[i + 1]), std::stof(words[i + 2]), std::stof(words[i + 3]));
 							index++;
 							i += 3;
 						}
@@ -459,8 +482,8 @@ private:
 
 	void init_opengl_buffors()
 	{
+
 		glGenBuffers(1, &VBO);
-		glGenBuffers(1, &EBO);
 		glGenVertexArrays(1, &VAO);
 
 		glBindVertexArray(VAO);
@@ -468,11 +491,55 @@ private:
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, vertices_count * sizeof(float), vertices, GL_STATIC_DRAW);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
-
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
+
+		if (parts_count > 0)
+		{
+			unsigned int* temp_indices = new unsigned int[parts_count];
+			triangles_parts_count = new unsigned int[parts_count];
+			parts_indices = new unsigned int*[parts_count];
+
+			for (unsigned int i = 0; i < parts_count; ++i)
+			{
+				temp_indices[i] = 0;
+				triangles_parts_count[i] = 0;
+			}
+
+			for (unsigned int i = 0; i < triangles_count; ++i)
+				triangles_parts_count[triangles_parts[i]] += 1;
+
+			for (unsigned int i = 0; i < parts_count; ++i)
+				parts_indices[i] = new unsigned int[triangles_parts_count[i] * INDEX_SIZE];
+
+
+			for (unsigned int i = 0; i < triangles_count; i++)
+			{
+				unsigned int part_index = triangles_parts[i];
+				parts_indices[part_index][temp_indices[part_index]] = indices[i * 3];
+				parts_indices[part_index][temp_indices[part_index] + 1] = indices[(i * 3) + 1];
+				parts_indices[part_index][temp_indices[part_index] + 2] = indices[(i * 3) + 2];
+				temp_indices[part_index] += 3;
+			}
+
+			EBO = new unsigned int[parts_count];
+
+			for (unsigned int i = 0; i < parts_count; ++i)
+			{
+				glGenBuffers(1, &EBO[i]);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles_parts_count[i] * INDEX_SIZE * sizeof(unsigned int), parts_indices[i], GL_STATIC_DRAW);
+			}
+
+			delete temp_indices;
+		}
+		else
+		{
+			EBO = new unsigned int;
+			glGenBuffers(1, &EBO[0]);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);

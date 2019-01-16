@@ -8,6 +8,11 @@
 #include <sstream>
 #include <iostream>
 
+struct Material {
+	std::string name = "defMat";
+	glm::vec3 color = glm::vec3(0.0f, 1.0f, 0.0f);
+};
+
 class Shader
 {
 public:
@@ -138,6 +143,11 @@ public:
 	void setMat4(const std::string &name, const glm::mat4 &mat) const
 	{
 		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+	}
+
+	void setMaterial(const Material &material)
+	{
+		setVec3("mat.color", material.color);
 	}
 
 private:
