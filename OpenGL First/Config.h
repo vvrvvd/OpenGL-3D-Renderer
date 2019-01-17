@@ -12,6 +12,7 @@
 #include "image_loader.h"
 #include "Quad.h"
 #include "Scene.h"
+#include "Light.h"
 #include "matrix_utils.h"
 #include "TPPcamera.h"
 #include "FPScamera.h"
@@ -20,11 +21,12 @@
 #include "imgui_impl_opengl3.h"
 #include "ImGuiFileDialog.h"
 
-const unsigned int WIDTH = 800;
-const unsigned int HEIGHT = 600;
+unsigned int WIDTH = 800;
+unsigned int HEIGHT = 600;
 
 const float NEAR_PLANE = 0.1f;
 const float FAR_PLANE = 100.0f;
+const float LIGHT_SCALE = 0.2f;
 const float FRUSTUM_FAR_PLANE = 2.5f;
 const glm::vec4 BACKGROUND_COLOR = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
 

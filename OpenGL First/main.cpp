@@ -74,6 +74,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+	WIDTH = width;
+	HEIGHT = height;
 	glViewport(0, 0, width, height);
 }
 
@@ -93,7 +95,7 @@ void config_openGL()
 	glEnable(GL_DEPTH_TEST);
 
 	//POLYGON-MODE
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void init_imgui()
@@ -141,6 +143,34 @@ void draw_UI()
 			}
 			ImGui::EndMenu();
 		}
+
+		if (ImGui::BeginMenu("Light"))
+		{
+			if (scene != NULL)
+			{
+				if (ImGui::Button("Phong"))
+					sceneShader = phongShader;
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Gouraud"))
+					sceneShader = gouraudShader;
+
+				if (ImGui::InputFloat3("Position", lightPos))
+				{
+					scene->lightPos = glm::vec3(lightPos[0], lightPos[1], lightPos[2]);
+					light->position = scene->lightPos;
+				}
+
+				if (ImGui::ColorPicker3("Color", lightColor))
+				{
+					scene->lightColor = glm::vec3(lightColor[0], lightColor[1], lightColor[2]);
+					light->color = scene->lightColor;
+				}
+				
+			}
+			ImGui::EndMenu();
+		}
 	ImGui::EndMainMenuBar();
 
 
@@ -181,6 +211,12 @@ void draw_file_chooser()
 				cameraPosition[0] = tppCamera->Position.x;
 				cameraPosition[1] = tppCamera->Position.y;
 				cameraPosition[2] = tppCamera->Position.z;
+				lightPos[0] = scene->lightPos[0];
+				lightPos[1] = scene->lightPos[1];
+				lightPos[2] = scene->lightPos[2];
+				lightColor[0] = scene->lightColor[0];
+				lightColor[1] = scene->lightColor[1];
+				lightColor[2] = scene->lightColor[2];
 			}
 		}
 		else
@@ -198,8 +234,10 @@ void draw_file_chooser()
 
 void load_shaders()
 {
-	sceneShader = new Shader("vertexTexture.vert", "fragmentTexture.frag");
-	frustumShader = new Shader("vertexTexture.vert","frustum.frag");
+	phongShader = new Shader("vertexTexturePhong.vert", "fragmentTexturePhong.frag");
+	gouraudShader = new Shader("vertexTextureGouraud.vert", "fragmentTextureGouraud.frag");
+	sceneShader = gouraudShader;
+	frustumShader = new Shader("frustum.vert","frustum.frag");
 }
 
 void load_scene()
@@ -210,8 +248,12 @@ void load_scene()
 	if (tppCamera != NULL)
 		delete tppCamera;
 	
+	if (light != NULL)
+		delete light;
+
 	scene = new Scene(fileName.c_str());
 	tppCamera = new TPPcamera(cameraPath.c_str());
+	light = new Light(scene->lightPos, scene->lightColor, LIGHT_SCALE, "light.vert", "light.frag");
 	camera = tppCamera;
 }
 
@@ -226,11 +268,17 @@ void dispose()
 	if (fpsCamera != NULL)
 		delete fpsCamera;
 
-	if(sceneShader != NULL)
-		delete sceneShader;
+	if (gouraudShader != NULL)
+		delete gouraudShader;
+
+	if (phongShader != NULL)
+		delete phongShader;
 
 	if(frustumShader != NULL)
 		delete frustumShader;
+
+	if (light != NULL)
+		delete light;
 }
 
 void init_camera_frustum_buffers()
@@ -298,7 +346,7 @@ void update_frustum_points()
 
 	glBindVertexArray(cameraVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, cameraVBO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, 24* sizeof(float), frustumVertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 24 * sizeof(float), frustumVertices);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -371,6 +419,10 @@ void process_input(GLFWwindow* window)
 		camera->ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera->ProcessKeyboard(RIGHT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	if (last_rmb_state == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
@@ -416,6 +468,7 @@ void draw_perspective_view()
 	sceneShader->setMat4("view", view);
 	sceneShader->setMat4("projection", projection);
 	scene->Draw(sceneShader);
+	light->Draw(view, projection);
 }
 
 void draw_ortho(Scene::Side side)
@@ -428,5 +481,6 @@ void draw_ortho(Scene::Side side)
 	sceneShader->setMat4("view", view);
 	sceneShader->setMat4("projection", projection);
 	scene->Draw(sceneShader);
+	light->Draw(view, projection);
 }
 

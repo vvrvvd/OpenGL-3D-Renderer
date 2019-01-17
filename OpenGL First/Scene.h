@@ -22,6 +22,9 @@ public:
 		BACK
 	};
 
+	glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
 private:
 	const std::string VERTICES_HEADER = "points_count";
 	const std::string INDICES_HEADER = "triangles_count";
@@ -88,6 +91,8 @@ public:
 	void Draw(Shader* shader)
 	{
 		glBindVertexArray(VAO);
+		shader->setVec3("lightPos", lightPos);
+		shader->setVec3("lightColor", lightColor);
 		if (parts_count > 0)
 		{
 			for (unsigned int i = 0; i < parts_count; ++i)
@@ -591,13 +596,64 @@ private:
 		normals_count = vertices_count;
 		normals = new float[normals_count];
 
-		for (unsigned int i = 0; i < vertices_count/VERTEX_SIZE; i++)
+		for (unsigned int i = 0; i < vertices_count  / VERTEX_SIZE; i++)
 		{
-			tempNormal == glm::vec3();
-			for (unsigned int k = 0; k < indices_count; k++)
+			tempNormal = glm::vec3(0);
+			for (unsigned int k = 0; k < indices_count / INDEX_SIZE; k++)
 			{
-				if (indices[k] == i)
-					tempNormal += triangles_normals[k/3];
+				glm::vec3 v1;
+				glm::vec3 v2;
+				bool is_adjacent = false;
+
+				if (indices[3 * k] == i)
+				{
+					v1.x = vertices[indices[3 * k + 1] * 3];
+					v1.y = vertices[indices[3 * k + 1] * 3 + 1];
+					v1.z = vertices[indices[3 * k + 1] * 3 + 2];
+					v2.x = vertices[indices[3 * k + 2] * 3];
+					v2.y = vertices[indices[3 * k + 2] * 3 + 1];
+					v2.z = vertices[indices[3 * k + 2] * 3 + 2];
+					is_adjacent = true;
+				}
+				else if (indices[3 * k + 1] == i)
+				{
+					v1.x = vertices[indices[3 * k] * 3];
+					v1.y = vertices[indices[3 * k] * 3 + 1];
+					v1.z = vertices[indices[3 * k] * 3 + 2];
+					v2.x = vertices[indices[3 * k + 2] * 3];
+					v2.y = vertices[indices[3 * k + 2] * 3 + 1];
+					v2.z = vertices[indices[3 * k + 2] * 3 + 2];
+					is_adjacent = true;
+				}
+				else if (indices[3 * k + 2] == i)
+				{
+					v1.x = vertices[indices[3 * k] * 3];
+					v1.y = vertices[indices[3 * k] * 3 + 1];
+					v1.z = vertices[indices[3 * k] * 3 + 2];
+					v2.x = vertices[indices[3 * k + 1] * 3];
+					v2.y = vertices[indices[3 * k + 1] * 3 + 1];
+					v2.z = vertices[indices[3 * k + 1] * 3 + 2];
+					is_adjacent = true;
+				}
+
+				if (is_adjacent)
+				{
+					glm::vec3 v0;
+					v0.x = vertices[i * 3];
+					v0.y = vertices[i* 3 + 1];
+					v0.z = vertices[i* 3 + 2];
+
+					glm::vec3 e1 = v1 - v0;
+					glm::vec3 e2 = v2 - v0;
+					float weight = 1.0f;
+
+					if (glm::dot(e1, e2) >= 0)
+						weight = (glm::asin(glm::length(glm::cross(e1, e2)) / (glm::length(e1) * glm::length(e2))));
+					else
+						weight = (glm::pi<float>() - glm::asin(glm::length(glm::cross(e1, e2)) / (glm::length(e1) * glm::length(e2))));
+					
+					tempNormal += weight * triangles_normals[k];
+				}
 			}
 			tempNormal = glm::normalize(tempNormal);
 			normals[i*VERTEX_SIZE] = tempNormal.x;

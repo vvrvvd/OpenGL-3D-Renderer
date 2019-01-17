@@ -45,8 +45,11 @@ float lastFrame = 0.0f;
 
 //Dynamic objects
 Shader* sceneShader;
+Shader* phongShader;
+Shader* gouraudShader;
 Shader* frustumShader;
 Scene* scene;
+Light* light;
 
 //Static objects
 GLFWwindow* window;
@@ -64,3 +67,7 @@ std::string fileName = "";
 std::string cameraPath = "";
 std::string filter = "";
 bool openSceneFileDialog = false;
+
+//Light parameters
+float lightPos[3];
+float lightColor[3];
