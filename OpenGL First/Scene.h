@@ -61,15 +61,18 @@ private:
 	unsigned int materials_count;
 	unsigned int** parts_indices;
 	unsigned int* triangles_parts_count;
-
 	std::vector<std::string> materials_names;
+
+	float* normals;
+	unsigned int normals_count;
+	
 
 	float minCoords[VERTEX_SIZE];
 	float maxCoords[VERTEX_SIZE];
 	float cameraCenter[VERTEX_SIZE];
 
 	std::stringstream sceneDataStream;
-	unsigned int VBO, VAO;
+	unsigned int VBO, VAO, normalsBuffer;
 	unsigned int* EBO;
 
 public:
@@ -278,14 +281,18 @@ public:
 			parts_indices = NULL;
 		}
 
+		if (normals != NULL)
+		{
+			delete normals;
+		}
+
 		glDeleteVertexArrays(1, &VAO);
 		glDeleteBuffers(1, &VBO);
+		glDeleteBuffers(1, &normalsBuffer);
 
 		if (EBO != NULL)
 		{
-			for (unsigned int i = 0; i < parts_count; i++)
-				glDeleteBuffers(1, &EBO[i]);
-
+			glDeleteBuffers(parts_count, EBO);
 			delete EBO;
 			EBO = NULL;
 		}
@@ -482,7 +489,7 @@ private:
 
 	void init_opengl_buffors()
 	{
-
+		
 		glGenBuffers(1, &VBO);
 		glGenVertexArrays(1, &VAO);
 
@@ -494,44 +501,26 @@ private:
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
 
+		calculateNormals();
+		
+		glGenBuffers(1, &normalsBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
+		glBufferData(GL_ARRAY_BUFFER, normals_count * sizeof(float), normals, GL_STATIC_DRAW);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+
 		if (parts_count > 0)
 		{
-			unsigned int* temp_indices = new unsigned int[parts_count];
-			triangles_parts_count = new unsigned int[parts_count];
-			parts_indices = new unsigned int*[parts_count];
-
-			for (unsigned int i = 0; i < parts_count; ++i)
-			{
-				temp_indices[i] = 0;
-				triangles_parts_count[i] = 0;
-			}
-
-			for (unsigned int i = 0; i < triangles_count; ++i)
-				triangles_parts_count[triangles_parts[i]] += 1;
-
-			for (unsigned int i = 0; i < parts_count; ++i)
-				parts_indices[i] = new unsigned int[triangles_parts_count[i] * INDEX_SIZE];
-
-
-			for (unsigned int i = 0; i < triangles_count; i++)
-			{
-				unsigned int part_index = triangles_parts[i];
-				parts_indices[part_index][temp_indices[part_index]] = indices[i * 3];
-				parts_indices[part_index][temp_indices[part_index] + 1] = indices[(i * 3) + 1];
-				parts_indices[part_index][temp_indices[part_index] + 2] = indices[(i * 3) + 2];
-				temp_indices[part_index] += 3;
-			}
+			createMaterialsAndPartsIndices();
 
 			EBO = new unsigned int[parts_count];
 
+			glGenBuffers(parts_count, EBO);
 			for (unsigned int i = 0; i < parts_count; ++i)
 			{
-				glGenBuffers(1, &EBO[i]);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles_parts_count[i] * INDEX_SIZE * sizeof(unsigned int), parts_indices[i], GL_STATIC_DRAW);
 			}
-
-			delete temp_indices;
 		}
 		else
 		{
@@ -543,5 +532,77 @@ private:
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
+	}
+
+	void createMaterialsAndPartsIndices()
+	{
+		unsigned int* temp_indices = new unsigned int[parts_count];
+		triangles_parts_count = new unsigned int[parts_count];
+		parts_indices = new unsigned int*[parts_count];
+
+		for (unsigned int i = 0; i < parts_count; ++i)
+		{
+			temp_indices[i] = 0;
+			triangles_parts_count[i] = 0;
+		}
+
+		for (unsigned int i = 0; i < triangles_count; ++i)
+			triangles_parts_count[triangles_parts[i]] += 1;
+
+		for (unsigned int i = 0; i < parts_count; ++i)
+			parts_indices[i] = new unsigned int[triangles_parts_count[i] * INDEX_SIZE];
+
+
+		for (unsigned int i = 0; i < triangles_count; i++)
+		{
+			unsigned int part_index = triangles_parts[i];
+			parts_indices[part_index][temp_indices[part_index]] = indices[i * 3];
+			parts_indices[part_index][temp_indices[part_index] + 1] = indices[(i * 3) + 1];
+			parts_indices[part_index][temp_indices[part_index] + 2] = indices[(i * 3) + 2];
+			temp_indices[part_index] += 3;
+		}
+
+		delete temp_indices;
+	}
+
+	void calculateNormals()
+	{
+		glm::vec3* triangles_normals = new glm::vec3[triangles_count];
+
+		glm::vec3 v[3];
+		glm::vec3 edge1, edge2;
+		glm::vec3 tempNormal;
+
+		for (unsigned int i = 0; i < triangles_count; i++)
+		{
+			for (unsigned int k = 0; k < 3; k++)
+			{
+				v[k].x = vertices[indices[(i * 3) + k] * 3];
+				v[k].y = vertices[indices[(i * 3) + k] * 3 + 1];
+				v[k].z = vertices[indices[(i * 3) + k] * 3 + 2];
+			}
+
+			edge1 = v[1] - v[0];
+			edge2 = v[2] - v[0];
+			tempNormal = glm::normalize(glm::cross(edge1, edge2));
+			triangles_normals[i] = tempNormal;
+		}
+
+		normals_count = vertices_count;
+		normals = new float[normals_count];
+
+		for (unsigned int i = 0; i < vertices_count/VERTEX_SIZE; i++)
+		{
+			tempNormal == glm::vec3();
+			for (unsigned int k = 0; k < indices_count; k++)
+			{
+				if (indices[k] == i)
+					tempNormal += triangles_normals[k/3];
+			}
+			tempNormal = glm::normalize(tempNormal);
+			normals[i*VERTEX_SIZE] = tempNormal.x;
+			normals[i*VERTEX_SIZE+1] = tempNormal.y;
+			normals[i*VERTEX_SIZE+2] = tempNormal.z;
+		}
 	}
 };

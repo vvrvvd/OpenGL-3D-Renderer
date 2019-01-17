@@ -93,7 +93,7 @@ void config_openGL()
 	glEnable(GL_DEPTH_TEST);
 
 	//POLYGON-MODE
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void init_imgui()
