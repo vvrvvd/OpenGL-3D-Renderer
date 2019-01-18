@@ -17,6 +17,7 @@ uniform Material mat;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
+uniform vec3 viewPos;
 
 void main()
 {
@@ -28,11 +29,19 @@ void main()
 	float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * lightColor;
 
-	//Diffuse
-	vec3 norm = normalize(Normal);
-	vec3 lightDir = normalize(lightPos - Pos);
-	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = diff * lightColor;
+    // diffuse 
+    vec3 norm = normalize(Normal);
+    vec3 lightDir = normalize(lightPos - Pos);
+    float diff = clamp(dot(norm, lightDir)/(length(norm)*length(lightDir)), 0.0, 1.0);
+    vec3 diffuse = diff * lightColor;
+    
 
-    Color = (diffuse + ambient) * mat.color;
+	// specular
+    float specularStrength = 0.5;
+    vec3 viewDir = normalize(viewPos - Pos);
+    vec3 reflectDir = reflect(-lightDir, norm);  
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * lightColor;
+
+    Color = (ambient + diffuse + specular) * mat.color;
 }

@@ -910,7 +910,7 @@ points_count 907
 3 3 -2.2
 
 
-// trojkaty
+// trójkąty
 triangles_count 1034
 0 2 1
 0 3 2
@@ -1946,12 +1946,14 @@ triangles_count 1034
 900 901 902
 903 906 904
 906 905 904
-// czesci
+
+
+// części
 parts_count 13
 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 5 5 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 3 3 3 3 3 3 3 3 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 5 5 5 5 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 5 5 5 5 5 5 5 5 5 5 5 5 3 3 3 3 3 3 3 3 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 5 5 5 5 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 5 5 5 5 5 5 5 5 5 5 5 5 3 3 3 3 3 3 3 3 5 5 5 5 4 4 4 4 4 4 4 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 6 6 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 7 7 7 7 7 7 7 7 9 9 9 9 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 0 0 1 1 1 6 6 8 0 11 11 12 12 
 
 
-// materialy
+// materiały
 materials_count 13
 
 mat_name mat0
@@ -1965,9 +1967,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 199
 n 1
 
@@ -1982,9 +1984,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 7
 n 1
 
@@ -1999,9 +2001,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 84
 n 1
 
@@ -2016,9 +2018,9 @@ ksCb 0.1
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 15
 n 1
 
@@ -2033,9 +2035,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 102
 n 1
 
@@ -2050,9 +2052,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 224
 n 1
 
@@ -2067,9 +2069,9 @@ ksCb 0.1
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 159
 n 1
 
@@ -2084,9 +2086,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 129
 n 1
 
@@ -2101,9 +2103,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 93
 n 1
 
@@ -2118,9 +2120,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 129
 n 1
 
@@ -2135,9 +2137,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 200
 n 1
 
@@ -2152,9 +2154,9 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 129
 n 1
 
@@ -2169,14 +2171,14 @@ ksCb 0
 krCr 0
 krCg 0
 krCb 0
-kaCr 5.78785e+033
-kaCg 6.9795e-039
-kaCb 8.5903e+009
+kaCr 5.78785E+33
+kaCg 6.24481E-39
+kaCb 8.5903E+09
 g 129
 n 1
 
 
-// przypisanie materialow
+// przypisanie materiałów
 0 mat0
 1 mat1
 2 mat2
@@ -2192,7 +2194,7 @@ n 1
 12 mat12
 
 
-// swiatla
+// światła
 lights_count 8
 
 light_name lgt0
@@ -2305,15 +2307,15 @@ cams_count 1
 active 0
 
 cam_name cam0
-resolution 800 600
-pos -6.7183 1.5 4.4723
-lookAt 1.7 1.5 -0.6
-fov 38.0523
+resolution 899 592
+pos -0.4389315 0.5534351 0.05679392
+lookAt 0.8778625 0.47615 0.7629008
+fov 37.1588
 rotation 0
 
 
 // hierarchia
-node_count 13
+node_count 21
 
 hier_type Mesh
 hier_name mesh0
@@ -2379,3 +2381,35 @@ hier_type Mesh
 hier_name mesh12
 triangle_count 2
 1032 1033 
+
+hier_type Light
+hier_name lgt0
+light_index 0
+
+hier_type Light
+hier_name lgt1
+light_index 1
+
+hier_type Light
+hier_name lgt2
+light_index 2
+
+hier_type Light
+hier_name lgt3
+light_index 3
+
+hier_type Light
+hier_name lgt4
+light_index 4
+
+hier_type Light
+hier_name lgt5
+light_index 5
+
+hier_type Light
+hier_name lgt6
+light_index 6
+
+hier_type Light
+hier_name lgt7
+light_index 7

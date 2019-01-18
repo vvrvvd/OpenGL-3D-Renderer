@@ -189,7 +189,7 @@ void draw_file_chooser()
 	if (openSceneFileDialog)
 	{
 		title = "Choose scene file";
-		extensions = ".brp\0\0";
+		extensions = "\0";
 	}
 
 	if (ImGuiFileDialog::Instance()->FileDialog(title.c_str(), extensions.c_str(), ".", ""))

@@ -11,15 +11,6 @@ const Material DEFAULT_MATERIAL;
 class Scene
 {
 
-	struct Mesh {
-		std::string name;
-		unsigned int triangles_count;
-		unsigned int* triangles;
-		unsigned int normals_count;
-		float* normals;
-		unsigned int* VAO;
-	};
-
 public:
 
 	enum Side {
@@ -84,9 +75,6 @@ private:
 	unsigned int* triangles_parts_count;
 	std::vector<std::string> materials_names;
 
-	Mesh* meshes;
-	unsigned int meshes_count;
-
 	float* normals;
 	unsigned int normals_count;
 
@@ -98,12 +86,80 @@ private:
 	unsigned int VBO, mainVAO, normalsBuffer;
 	unsigned int* EBO;
 
+	//OBJ File
+	std::vector<glm::vec3> obj_vertices;
+	std::vector<glm::vec3> obj_normals;
+	std::vector<unsigned int> obj_normals_indices;
+	std::vector<unsigned int> obj_elements;
+
+	int modifier = 1;
+
 public:
 
 	Scene(const char* scenePath)
 	{
-		load_file(scenePath);
-		parse_data();
+		std::string scenePathString = scenePath;
+		if (scenePathString.substr(scenePathString.length() - 3, 3) == "obj")
+		{
+			modifier = -1;
+			load_obj(scenePath, obj_vertices, obj_normals, obj_elements, obj_normals_indices);
+			vertices_count = obj_vertices.size() * VERTEX_SIZE;
+			vertices = new float[vertices_count];
+			int count = 0;
+			for (unsigned int i = 0; i < obj_vertices.size(); i++)
+			{
+				vertices[i*3] = obj_vertices[i].x;
+				vertices[i*3+1] = obj_vertices[i].y;
+				vertices[i*3+2] = obj_vertices[i].z;
+				if (vertices[i * 3] == 0 || vertices[i * 3 + 1] == 0 || vertices[i * 3 + 2] == 0)
+					count++;
+			}
+
+			indices_count = obj_elements.size();
+			indices = new unsigned int[indices_count];
+			for (unsigned int i = 0; i < obj_elements.size(); i++)
+			{
+				indices[i] = obj_elements[i]-1;
+			}
+
+			std::vector<float> populated_vertices;
+			std::vector<float> populated_normals;
+			for (unsigned int i = 0; i < indices_count; i++)
+			{
+				populated_vertices.push_back(vertices[indices[i] * 3]);
+				populated_vertices.push_back(vertices[indices[i] * 3 + 1]);
+				populated_vertices.push_back(vertices[indices[i] * 3 + 2]);
+				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].x);
+				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].y);
+				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].z);
+				indices[i] = i;
+			}
+
+			delete vertices;
+			vertices_count = populated_vertices.size();
+			vertices = new float[vertices_count];
+			
+			delete normals;
+			normals_count = populated_normals.size();
+			normals = new float[normals_count];
+
+			for (unsigned int i = 0; i < vertices_count; i++)
+			{
+				vertices[i] = populated_vertices[i];
+			}
+
+			for (unsigned int i = 0; i < normals_count; i++)
+			{
+				normals[i] = populated_normals[i];
+			}
+		}
+		else
+		{
+			load_file(scenePath);
+			parse_data();
+			populate_indices();
+		}
+
 		find_clipping_coords();
 		init_opengl_buffors();
 	}
@@ -322,15 +378,6 @@ public:
 			EBO = NULL;
 		}
 
-		if (meshes != NULL)
-		{
-			for (unsigned int i = 0; i < meshes_count; i++)
-				delete meshes[i].triangles;
-
-			delete[] meshes;
-
-			meshes = NULL;
-		}
 	}
 
 private:
@@ -356,7 +403,6 @@ private:
 	{
 		unsigned int loadingState = LOOK_FOR_VERTICES;
 		unsigned int index = 0;
-		unsigned int temp_mesh_triangle = 0;
 		std::string line;
 		while (std::getline(sceneDataStream, line)) {
 			std::vector<std::string> words = split(line, " ");
@@ -462,15 +508,7 @@ private:
 					}
 					else if (loadingState == LOAD_PARTS_ARRAY)
 					{
-						if (words[i] == MESHES_INIT_HEADER)
-						{
-							meshes_count = std::stoul(words[i+1]);
-							meshes = new Mesh[meshes_count];
-							loadingState = LOAD_MESH_ARRAY;
-							index = 0;
-							i++;
-						}
-						else if (index < parts_count && words.size() == 2)
+						if (index < parts_count && words.size() == 2)
 						{
 							unsigned int name_ind = -1;
 							for (unsigned int k = 0; k < materials_names.size(); k++)
@@ -485,30 +523,6 @@ private:
 							index++;
 							i += 1;
 						}
-					}
-					else if (loadingState == LOAD_MESH_ARRAY)
-					{
-						if (words[i] == MESH_NAME_HEADER)
-						{
-							meshes[index].name = words[i + 1];
-							i++;
-						}
-						else if (words[i] == MESH_TRIANGLE_COUNT_HEADER)
-						{
-							meshes[index].triangles_count = std::stoi(words[i+1]);
-							meshes[index].triangles = new unsigned int[meshes[index].triangles_count];
-							for (unsigned int k = 0; k < meshes[index].triangles_count; k++)
-								meshes[index].triangles[k] = NULL;
-							loadingState = LOAD_MESH_TRIANGLES;
-							i++;
-						}
-					}
-					else if (loadingState == LOAD_MESH_TRIANGLES)
-					{
-						for (unsigned int k = 0; k < meshes[index].triangles_count; k++)
-							meshes[index].triangles[k] = std::stoi(words[i + k]);
-						loadingState = LOAD_MESH_ARRAY;
-						index++;
 					}
 				}
 			}
@@ -568,7 +582,8 @@ private:
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
 
-		calculateNormalsWithoutMeshes();
+		if (modifier == 1) //It's not an object file
+			calculateNormalsWithoutMeshes();
 		
 		glGenBuffers(1, &normalsBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
@@ -630,114 +645,6 @@ private:
 		}
 
 		delete temp_indices;
-	}
-
-	void calculateNormalsFromMeshes()
-	{
-		glm::vec3* triangles_normals = new glm::vec3[triangles_count];
-
-		glm::vec3 v[3];
-		glm::vec3 edge1, edge2;
-		glm::vec3 tempNormal;
-
-		for (unsigned int i = 0; i < triangles_count; i++)
-		{
-			for (unsigned int k = 0; k < 3; k++)
-			{
-				v[k].x = vertices[indices[(i * 3) + k] * 3];
-				v[k].y = vertices[indices[(i * 3) + k] * 3 + 1];
-				v[k].z = vertices[indices[(i * 3) + k] * 3 + 2];
-			}
-
-			edge1 = v[1] - v[0];
-			edge2 = v[2] - v[0];
-			tempNormal = glm::normalize(glm::cross(edge1, edge2));
-			triangles_normals[i] = tempNormal;
-		}
-
-		normals_count = vertices_count;
-		normals = new float[normals_count];
-
-		for (unsigned int mesh_ind = 0; mesh_ind < meshes_count; mesh_ind++)
-		{
-			for (unsigned int triangle_ind = 0; triangle_ind < meshes[mesh_ind].triangles_count; triangle_ind++)
-			{
-				unsigned int triangle_index_for_normal = meshes[mesh_ind].triangles[triangle_ind] * INDEX_SIZE;
-				for (unsigned int i = 0; i < 3; i++)
-				{
-					unsigned int vertex_index_for_normal = indices[triangle_index_for_normal + i];
-					tempNormal = glm::vec3(0);
-					for (unsigned int k = 0; k < meshes[mesh_ind].triangles_count; k++)
-					{
-						glm::vec3 v1 = glm::vec3(0);
-						glm::vec3 v2 = glm::vec3(0);;
-						bool is_adjacent = false;
-
-						if (indices[meshes[mesh_ind].triangles[k]*3] == vertex_index_for_normal)
-						{
-							v1.x = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 1] * 3];
-							v1.y = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 1] * 3 + 1];
-							v1.z = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 1] * 3 + 2];
-							v2.x = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 2] * 3];
-							v2.y = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 2] * 3 + 1];
-							v2.z = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 2] * 3 + 2];
-							is_adjacent = true;
-						}
-						else if (indices[meshes[mesh_ind].triangles[k]*3 + 1] == vertex_index_for_normal)
-						{
-							v1.x = vertices[indices[meshes[mesh_ind].triangles[k] * 3] * 3];
-							v1.y = vertices[indices[meshes[mesh_ind].triangles[k] * 3] * 3 + 1];
-							v1.z = vertices[indices[meshes[mesh_ind].triangles[k] * 3] * 3 + 2];
-							v2.x = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 2] * 3];
-							v2.y = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 2] * 3 + 1];
-							v2.z = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 2] * 3 + 2];
-							is_adjacent = true;
-						}
-						else if (indices[meshes[mesh_ind].triangles[k]*3 + 2] == vertex_index_for_normal)
-						{
-							v1.x = vertices[indices[meshes[mesh_ind].triangles[k] * 3] * 3];
-							v1.y = vertices[indices[meshes[mesh_ind].triangles[k] * 3] * 3 + 1];
-							v1.z = vertices[indices[meshes[mesh_ind].triangles[k] * 3] * 3 + 2];
-							v2.x = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 1] * 3];
-							v2.y = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 1] * 3 + 1];
-							v2.z = vertices[indices[meshes[mesh_ind].triangles[k] * 3 + 1] * 3 + 2];
-							is_adjacent = true;
-						}
-
-						if (is_adjacent)
-						{
-							glm::vec3 v0 = glm::vec3(0);
-							v0.x = vertices[vertex_index_for_normal];
-							v0.y = vertices[vertex_index_for_normal + 1];
-							v0.z = vertices[vertex_index_for_normal + 2];
-
-							glm::vec3 e1 = v1 - v0;
-							glm::vec3 e2 = v2 - v0;
-							float weight = 1.0f;
-							std::cout << " e1 ";
-							print(e1);
-							std::cout << " e2 ";
-							print(e2);
-							std::cout << " dot " << glm::dot(e1, e2) << std::endl;
-							if (glm::dot(e1, e2) >= 0)
-								weight = (glm::asin(glm::length(glm::cross(e1, e2)) / (glm::length(e1) * glm::length(e2))));
-							else
-								weight = (glm::pi<float>() - glm::asin(glm::length(glm::cross(e1, e2)) / (glm::length(e1) * glm::length(e2))));
-							std::cout << " weight " << weight << std::endl;
-
-							tempNormal += weight * triangles_normals[k];
-						}
-					}
-					tempNormal = glm::normalize(tempNormal);
-					std::cout << "ostateczny normal ";
-					print(tempNormal);
-					normals[i*VERTEX_SIZE] = tempNormal.x;
-					normals[i*VERTEX_SIZE + 1] = tempNormal.y;
-					normals[i*VERTEX_SIZE + 2] = tempNormal.z;
-				}
-			}
-		}
-		delete triangles_normals;
 	}
 
 	void calculateNormalsWithoutMeshes()
@@ -817,19 +724,100 @@ private:
 					glm::vec3 e2 = v2 - v0;
 					float weight = 1.0f;
 
-					//if (glm::dot(e1, e2) >= 0)
+					if (glm::dot(e1, e2) >= 0)
 						weight = (glm::asin(glm::length(glm::cross(e1, e2)) / (glm::length(e1) * glm::length(e2))));
-				/*	else
+					else
 						weight = (glm::pi<float>() - glm::asin(glm::length(glm::cross(e1, e2)) / (glm::length(e1) * glm::length(e2))));
-*/
-					tempNormal += weight * triangles_normals[k];
+
+					tempNormal += weight * modifier * triangles_normals[k];
 				}
 			}
 			tempNormal = glm::normalize(tempNormal);
-			print(tempNormal);
 			normals[i*VERTEX_SIZE] = tempNormal.x;
 			normals[i*VERTEX_SIZE + 1] = tempNormal.y;
 			normals[i*VERTEX_SIZE + 2] = tempNormal.z;
+		}
+	}
+
+	void load_obj(const char* filename, std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<unsigned int> &elements, std::vector<unsigned int> &normals_indices)
+	{
+		std::ifstream in(filename, std::ios::in);
+		if (!in)
+		{
+			std::cerr << "Cannot open " << filename << std::endl;
+		}
+
+		std::string line;
+		while (getline(in, line))
+		{
+				if (line.substr(0, 2) == "v ")
+				{
+					std::vector<std::string> lines_v = split(line.substr(2), " ");
+					glm::vec3 v; 
+					v.x = stof(lines_v[0]);
+					v.y = stof(lines_v[1]);;
+					v.z = stof(lines_v[2]);;
+					vertices.push_back(v);
+				}
+				else if (line.substr(0, 3) == "vn ")
+				{
+					std::vector<std::string> lines_v = split(line.substr(3), " ");
+					glm::vec3 v;
+					v.x = stof(lines_v[0]);
+					v.y = stof(lines_v[1]);;
+					v.z = stof(lines_v[2]);;
+					normals.push_back(v);
+				}
+				else if (line.substr(0, 2) == "f ")
+				{
+					std::vector<std::string> lines_f = split(line.substr(2), " ");
+					for (unsigned int i = 0; i < 3; i++)
+					{
+						std::vector<std::string> lines_e = split(lines_f[i], "/");
+						elements.push_back(std::stoi(lines_e[0]));
+						normals_indices.push_back(std::stoi(lines_e[2]));
+					}
+					if (lines_f.size() == 4)
+					{
+						for (unsigned int i = 0; i < 4; i++)
+						{
+							if (i != 1)
+							{
+								std::vector<std::string> lines_e = split(lines_f[i], "/");
+								elements.push_back(std::stoi(lines_e[0]));
+								normals_indices.push_back(std::stoi(lines_e[2]));
+							}
+						}
+					}
+
+				}
+				else
+				{
+					/* ignoring this line */
+				}
+
+		}
+	}
+
+	void populate_indices()
+	{
+		std::cout << "Before " << vertices_count << " ";
+		std::vector<float> populated_vertices;
+		for (unsigned int i = 0; i < indices_count; i++)
+		{
+			populated_vertices.push_back(vertices[indices[i] * 3]);
+			populated_vertices.push_back(vertices[indices[i] * 3 + 1]);
+			populated_vertices.push_back(vertices[indices[i] * 3 + 2]);
+			indices[i] = i;
+		}
+
+		delete vertices;
+		vertices_count = populated_vertices.size();
+		std::cout << "after " << vertices_count << std::endl;
+		vertices = new float[vertices_count];
+		for (unsigned int i=0; i < vertices_count; i++)
+		{
+			vertices[i] = populated_vertices[i];
 		}
 	}
 };
