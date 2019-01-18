@@ -467,6 +467,7 @@ void draw_perspective_view()
 	sceneShader->setMat4("model", model);
 	sceneShader->setMat4("view", view);
 	sceneShader->setMat4("projection", projection);
+	sceneShader->setVec3("viewPos", tppCamera->Position);
 	scene->Draw(sceneShader);
 	light->Draw(view, projection);
 }
@@ -480,6 +481,7 @@ void draw_ortho(Scene::Side side)
 	sceneShader->setMat4("model", model);
 	sceneShader->setMat4("view", view);
 	sceneShader->setMat4("projection", projection);
+	sceneShader->setVec3("viewPos", tppCamera->Position);
 	scene->Draw(sceneShader);
 	light->Draw(view, projection);
 }

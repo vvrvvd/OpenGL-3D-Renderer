@@ -22,9 +22,9 @@ uniform vec3 lightColor;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
-	Pos = aPos;
-	Normal = aNormal;
+	Pos = vec3(model * vec4(aPos, 1));
+    gl_Position = projection * view * vec4(Pos, 1);
+	Normal = transpose(inverse(mat3(model))) * aNormal;
 	Color = mat.color;
 	lightPosFrag = lightPos;
 	lightColorFrag = lightColor;
