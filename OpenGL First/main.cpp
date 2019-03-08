@@ -171,6 +171,26 @@ void draw_UI()
 			}
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu("Material"))
+		{
+			if (scene != NULL)
+			{
+				ImGui::SameLine();
+
+				if (ImGui::InputFloat("Ambient", &DEFAULT_MATERIAL.ambient));
+
+				if (ImGui::InputFloat("Specular", &DEFAULT_MATERIAL.specular));
+
+				if (ImGui::ColorPicker3("Color", defaultColor))
+				{
+					DEFAULT_MATERIAL.color.r = defaultColor[0];
+					DEFAULT_MATERIAL.color.g = defaultColor[1];
+					DEFAULT_MATERIAL.color.b = defaultColor[2];
+				}
+
+			}
+			ImGui::EndMenu();
+		}
 	ImGui::EndMainMenuBar();
 
 

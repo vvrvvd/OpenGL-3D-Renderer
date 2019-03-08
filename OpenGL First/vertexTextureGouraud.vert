@@ -1,6 +1,8 @@
 #version 330 core
 struct Material{
 	vec3 color;
+	float ambient;
+	float specular;
 };
 
 layout (location = 0) in vec3 aPos;
@@ -26,7 +28,7 @@ void main()
 	Normal =  aNormal;
 
 	//Ambient
-	float ambientStrength = 0.1;
+	float ambientStrength = mat.ambient;
     vec3 ambient = ambientStrength * lightColor;
 
     // diffuse 
@@ -37,7 +39,7 @@ void main()
     
 
 	// specular
-    float specularStrength = 0.5;
+    float specularStrength = mat.specular;
     vec3 viewDir = normalize(viewPos - Pos);
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);

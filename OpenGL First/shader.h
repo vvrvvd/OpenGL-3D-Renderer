@@ -10,7 +10,9 @@
 
 struct Material {
 	std::string name = "defMat";
-	glm::vec3 color = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
+	float ambient = 0.1f;
+	float specular = 0.5f;
 };
 
 class Shader
@@ -148,6 +150,8 @@ public:
 	void setMaterial(const Material &material)
 	{
 		setVec3("mat.color", material.color);
+		setFloat("mat.ambient", material.ambient);
+		setFloat("mat.specular", material.specular);
 	}
 
 private:

@@ -6,7 +6,9 @@
 const unsigned int VERTEX_SIZE = 3;
 const unsigned int INDEX_SIZE = 3;
 const float ORTHO_OFFSET = 0.5f;
-const Material DEFAULT_MATERIAL;
+
+Material DEFAULT_MATERIAL;
+float* defaultColor;
 
 class Scene
 {
@@ -157,11 +159,13 @@ public:
 		{
 			load_file(scenePath);
 			parse_data();
-			populate_indices();
+			//populate_indices();
 		}
 
 		find_clipping_coords();
 		init_opengl_buffors();
+
+		defaultColor = new float[3]{ DEFAULT_MATERIAL.color.r, DEFAULT_MATERIAL.color.g, DEFAULT_MATERIAL.color.b };
 	}
 
 	void Draw(Shader* shader)
@@ -376,6 +380,12 @@ public:
 			glDeleteBuffers(parts_count, EBO);
 			delete EBO;
 			EBO = NULL;
+		}
+
+		if (defaultColor != NULL)
+		{
+			delete defaultColor;
+			defaultColor = NULL;
 		}
 
 	}
@@ -664,7 +674,7 @@ private:
 				v[k].z = vertices[indices[(i * 3) + k] * 3 + 2];
 			}
 
-			edge1 = v[0] - v[1];
+			edge1 = v[1] - v[0];
 			edge2 = v[2] - v[0];
 			tempNormal = glm::normalize(glm::cross(edge1, edge2));
 			triangles_normals[i] = tempNormal;
