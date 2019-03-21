@@ -50,7 +50,7 @@ public:
 
 	void SetCenter(glm::vec3 cameraCenter)
 	{
-		cameraCenter = cameraCenter;
+		CameraCenter = cameraCenter;
 	}
 
 	virtual void SetPosition(glm::vec3 pos)
