@@ -78,7 +78,7 @@ class Light
 		}
 
 
-		// Draws light model on screen
+		// Draws light model on a screen
 		void Draw(const glm::mat4 &view, const glm::mat4 &projection)
 		{
 			glm::mat4 model;

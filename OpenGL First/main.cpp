@@ -2,20 +2,20 @@
 
 int main()
 {
-	init_glfw();
-	init_window();
-	init_glad();
-	config_openGL();
-	init_imgui();
+	initGLFW();
+	initWindow();
+	initGLAD();
+	configOpenGL();
+	initImGUI();
 
-	load_shaders();
+	loadShaders();
 
-	init_camera_frustum_buffers();
+	initCameraFrustumBuffers();
 
 	while (!glfwWindowShouldClose(window))
 	{
-		update_time();
-		core_loop();
+		updateTime();
+		coreLoop();
 	}
 
 	ImGui_ImplGlfw_Shutdown();
@@ -26,7 +26,7 @@ int main()
 	return 0;
 }
 
-void init_glfw()
+void initGLFW()
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -34,7 +34,7 @@ void init_glfw()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
-void init_window()
+void initWindow()
 {
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Learn OpenGL", NULL, NULL);
 	if (window == NULL)
@@ -44,11 +44,11 @@ void init_window()
 	}
 
 	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+	glfwSetScrollCallback(window, scrollCallback);
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouseCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -66,20 +66,20 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	if(camera!=NULL)
 		camera->ProcessMouseScroll(yoffset);
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
 	WIDTH = width;
 	HEIGHT = height;
 	glViewport(0, 0, width, height);
 }
 
-void init_glad()
+void initGLAD()
 {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -87,29 +87,26 @@ void init_glad()
 	}
 }
 
-void config_openGL()
+void configOpenGL()
 {
 	glViewport(0, 0, WIDTH, HEIGHT);
 
 	//Z-BUFFER
 	glEnable(GL_DEPTH_TEST);
-
-	//POLYGON-MODE
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
-void init_imgui()
+void initImGUI()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO(); 
 	ImGui::StyleColorsDark();
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(NULL);
 }
 
-void draw_UI()
+void drawUI()
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -177,15 +174,15 @@ void draw_UI()
 			{
 				ImGui::SameLine();
 
-				if (ImGui::InputFloat("Ambient", &DEFAULT_MATERIAL.ambient));
+				if (ImGui::InputFloat("Ambient", &DefaultMaterial.ambient));
 
-				if (ImGui::InputFloat("Specular", &DEFAULT_MATERIAL.specular));
+				if (ImGui::InputFloat("Specular", &DefaultMaterial.specular));
 
-				if (ImGui::ColorPicker3("Color", defaultColor))
+				if (ImGui::ColorPicker3("Color", DefaultColor))
 				{
-					DEFAULT_MATERIAL.color.r = defaultColor[0];
-					DEFAULT_MATERIAL.color.g = defaultColor[1];
-					DEFAULT_MATERIAL.color.b = defaultColor[2];
+					DefaultMaterial.color.r = DefaultColor[0];
+					DefaultMaterial.color.g = DefaultColor[1];
+					DefaultMaterial.color.b = DefaultColor[2];
 				}
 
 			}
@@ -195,13 +192,13 @@ void draw_UI()
 
 
 	if (openSceneFileDialog)
-		draw_file_chooser();
+		drawFileChooser();
 	
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void draw_file_chooser()
+void drawFileChooser()
 {
 	std::string extensions = "";
 	std::string title = "Choose File";
@@ -224,7 +221,7 @@ void draw_file_chooser()
 
 			if (openSceneFileDialog)
 			{
-				load_scene();
+				loadScene();
 				cameraCenter[0] = tppCamera->CameraCenter.x;
 				cameraCenter[1] = tppCamera->CameraCenter.y;
 				cameraCenter[2] = tppCamera->CameraCenter.z;
@@ -252,15 +249,15 @@ void draw_file_chooser()
 	}
 }
 
-void load_shaders()
+void loadShaders()
 {
-	phongShader = new Shader("shaders/vertexTexturePhong.vert", "shaders/fragmentTexturePhong.frag");
-	gouraudShader = new Shader("shaders/vertexTextureGouraud.vert", "shaders/fragmentTextureGouraud.frag");
+	phongShader = new Shader("Shaders/vertexTexturePhong.vert", "Shaders/fragmentTexturePhong.frag");
+	gouraudShader = new Shader("Shaders/vertexTextureGouraud.vert", "Shaders/fragmentTextureGouraud.frag");
 	sceneShader = gouraudShader;
-	frustumShader = new Shader("shaders/frustum.vert","shaders/frustum.frag");
+	frustumShader = new Shader("Shaders/frustum.vert","Shaders/frustum.frag");
 }
 
-void load_scene()
+void loadScene()
 {
 	if (scene != NULL)
 		delete scene;
@@ -273,7 +270,7 @@ void load_scene()
 
 	scene = new Scene(filePathName.c_str());
 	tppCamera = new TPPcamera(cameraPath.c_str());
-	light = new Light(scene->LightPos, scene->LightColor, LIGHT_SCALE, "shaders/light.vert", "shaders/light.frag");
+	light = new Light(scene->LightPos, scene->LightColor, LIGHT_SCALE, "Shaders/light.vert", "Shaders/light.frag");
 	camera = tppCamera;
 }
 
@@ -301,7 +298,7 @@ void dispose()
 		delete light;
 }
 
-void init_camera_frustum_buffers()
+void initCameraFrustumBuffers()
 {
 	unsigned int frustumIndices[]=
 	{ 
@@ -337,7 +334,7 @@ void init_camera_frustum_buffers()
 	glBindVertexArray(0);
 }
 
-void update_frustum_points()
+void updateFrustumPoints()
 {
 	glm::mat4 model = glm::mat4();
 	glm::mat4 view = camera->GetViewMatrix();
@@ -375,16 +372,16 @@ void update_frustum_points()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void update_time()
+void updateTime()
 {
 	float currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
 }
 
-void core_loop()
+void coreLoop()
 {
-	process_input(window);
+	processInput(window);
 
 	//rendering
 	glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, BACKGROUND_COLOR.a);
@@ -394,38 +391,39 @@ void core_loop()
 
 	if (scene != NULL)
 	{
-		update_frustum_points();
+		updateFrustumPoints();
 
 		glm::mat4 frustum_model = glm::mat4();
 
 		//left top
 		glViewport(0, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
-		draw_perspective_view();
+		drawPerspectiveView();
 
 		//left bottom
 		glViewport(0, 0, WIDTH*0.5, HEIGHT*0.5);
-		draw_ortho(Scene::TOP);
-		draw_frustum(frustum_model, scene->GetOrthoView(Scene::TOP), scene->GetOrtho(RATIO, Scene::TOP));
+		drawOrtho(Scene::TOP);
+		drawFrustum(frustum_model, scene->GetOrthoView(Scene::TOP), scene->GetOrthoProjection(RATIO, Scene::TOP));
 
 		//right bottom
 		glViewport(WIDTH*0.5, 0, WIDTH*0.5, HEIGHT*0.5);
-		draw_ortho(Scene::FRONT);
-		draw_frustum(frustum_model, scene->GetOrthoView(Scene::FRONT), scene->GetOrtho(RATIO, Scene::FRONT));
+		drawOrtho(Scene::FRONT);
+		drawFrustum(frustum_model, scene->GetOrthoView(Scene::FRONT), scene->GetOrthoProjection(RATIO, Scene::FRONT));
 
 		//right top
 		glViewport(WIDTH*0.5, HEIGHT*0.5, WIDTH*0.5, HEIGHT*0.5);
-		draw_ortho(Scene::RIGHT);
-		draw_frustum(frustum_model, scene->GetOrthoView(Scene::RIGHT), scene->GetOrtho(RATIO, Scene::RIGHT));
+		drawOrtho(Scene::RIGHT);
+		drawFrustum(frustum_model, scene->GetOrthoView(Scene::RIGHT), scene->GetOrthoProjection(RATIO, Scene::RIGHT));
 	}
 
 	glViewport(0, 0, WIDTH, HEIGHT); //restore default
-	draw_UI();
+	drawUI();
+
 	//check and call events and swap buffers
 	glfwPollEvents();
 	glfwSwapBuffers(window);
 }
 
-void process_input(GLFWwindow* window)
+void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -444,18 +442,18 @@ void process_input(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	if (last_rmb_state == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	if (lastRmbState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		firstMouse = true;
-		glfwSetCursorPosCallback(window, mouse_callback);
-		last_rmb_state = GLFW_PRESS;
+		glfwSetCursorPosCallback(window, mouseCallback);
+		lastRmbState = GLFW_PRESS;
 	}
-	else if(last_rmb_state == GLFW_PRESS && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+	else if(lastRmbState == GLFW_PRESS && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		glfwSetCursorPosCallback(window, NULL);
-		last_rmb_state = GLFW_RELEASE;
+		lastRmbState = GLFW_RELEASE;
 	}
 
 	if (tppCamera != NULL)
@@ -467,7 +465,7 @@ void process_input(GLFWwindow* window)
 	
 }
 
-void draw_frustum(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
+void drawFrustum(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
 {
 	frustumShader->use();
 	frustumShader->setMat4("model", model);
@@ -478,7 +476,7 @@ void draw_frustum(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
 	glBindVertexArray(0);
 }
 
-void draw_perspective_view()
+void drawPerspectiveView()
 {
 	glm::mat4 model = glm::mat4();
 	glm::mat4 view = camera->GetViewMatrix();
@@ -492,11 +490,11 @@ void draw_perspective_view()
 	light->Draw(view, projection);
 }
 
-void draw_ortho(Scene::Side side)
+void drawOrtho(Scene::Side side)
 {
 	glm::mat4 model = glm::mat4();
 	glm::mat4 view = scene->GetOrthoView(side);
-	glm::mat4 projection = scene->GetOrtho(RATIO, side);
+	glm::mat4 projection = scene->GetOrthoProjection(RATIO, side);
 	sceneShader->use();
 	sceneShader->setMat4("model", model);
 	sceneShader->setMat4("view", view);

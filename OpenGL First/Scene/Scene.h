@@ -8,8 +8,8 @@ const unsigned int VERTEX_SIZE = 3;
 const unsigned int INDEX_SIZE = 3;
 const float ORTHO_OFFSET = 0.5f;
 
-Material DEFAULT_MATERIAL;
-float* defaultColor;
+Material DefaultMaterial;
+float* DefaultColor;
 
 class Scene
 {
@@ -24,41 +24,14 @@ public:
 		FRONT,
 		BACK
 	};
-
+	
 	glm::vec3 LightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
 private:
-	const std::string VERTICES_HEADER = "points_count";
-	const std::string INDICES_HEADER = "triangles_count";
-	const std::string PARTS_HEADER = "parts_count";
-	const std::string MATERIALS_HEADER = "materials_count";
-	const std::string MATERIAL_NAME_HEADER = "mat_name";
-	const std::string MATERIAL_COLOR_HEADER = "rgb";
-	const std::string MESHES_INIT_HEADER = "node_count";
-	const std::string MESH_NAME_HEADER = "hier_name";
-	const std::string MESH_TRIANGLE_COUNT_HEADER = "triangle_count";
-
 	const unsigned int X = 0;
 	const unsigned int Y = 1;
 	const unsigned int Z = 2;
-
-	const unsigned int LOOK_FOR_VERTICES = 0;
-	const unsigned int ASSIGN_VERTICES_ARRAY = 1;
-	const unsigned int LOAD_VERTICES_ARRAY = 2;
-	const unsigned int ASSIGN_INDICES_ARRAY = 3;
-	const unsigned int LOAD_INDICES_ARRAY = 4;
-	const unsigned int ASSIGN_PARTS_ARRAY = 5;
-	const unsigned int LOAD_TRIANGLES_PARTS_ARRAY = 6;
-	const unsigned int ASSIGN_MATERIALS_ARRAY = 7;
-	const unsigned int LOAD_MATERIALS_ARRAY = 8;
-	const unsigned int LOAD_PARTS_ARRAY = 9;
-	const unsigned int ASSIGN_MESH_ARRAY = 10;
-	const unsigned int LOAD_MESH_ARRAY = 11;
-	const unsigned int ASSIGN_MESH_NAME = 12;
-	const unsigned int ASSIGN_MESH_TRIANGLES = 13;
-	const unsigned int LOAD_MESH_TRIANGLES = 14;
-
 
 	float* vertices;
 	unsigned int vertices_count;
@@ -89,84 +62,21 @@ private:
 	unsigned int VBO, mainVAO, normalsBuffer;
 	unsigned int* EBO;
 
-	//OBJ File
+	//Obj file data
 	std::vector<glm::vec3> obj_vertices;
 	std::vector<glm::vec3> obj_normals;
 	std::vector<unsigned int> obj_normals_indices;
 	std::vector<unsigned int> obj_elements;
 
-	int modifier = 1;
-
 public:
 
 	Scene(const char* scenePath)
 	{
-		std::string scenePathString = scenePath;
-		if (scenePathString.substr(scenePathString.length() - 3, 3) == "obj")
-		{
-			modifier = -1;
-			load_obj(scenePath, obj_vertices, obj_normals, obj_elements, obj_normals_indices);
-			vertices_count = obj_vertices.size() * VERTEX_SIZE;
-			vertices = new float[vertices_count];
-			int count = 0;
-			for (unsigned int i = 0; i < obj_vertices.size(); i++)
-			{
-				vertices[i*3] = obj_vertices[i].x;
-				vertices[i*3+1] = obj_vertices[i].y;
-				vertices[i*3+2] = obj_vertices[i].z;
-				if (vertices[i * 3] == 0 || vertices[i * 3 + 1] == 0 || vertices[i * 3 + 2] == 0)
-					count++;
-			}
+		parseFromFile(scenePath);
+		findClippingCoords();
+		initOpenglBuffors();
 
-			indices_count = obj_elements.size();
-			indices = new unsigned int[indices_count];
-			for (unsigned int i = 0; i < obj_elements.size(); i++)
-			{
-				indices[i] = obj_elements[i]-1;
-			}
-
-			std::vector<float> populated_vertices;
-			std::vector<float> populated_normals;
-			for (unsigned int i = 0; i < indices_count; i++)
-			{
-				populated_vertices.push_back(vertices[indices[i] * 3]);
-				populated_vertices.push_back(vertices[indices[i] * 3 + 1]);
-				populated_vertices.push_back(vertices[indices[i] * 3 + 2]);
-				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].x);
-				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].y);
-				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].z);
-				indices[i] = i;
-			}
-
-			delete vertices;
-			vertices_count = populated_vertices.size();
-			vertices = new float[vertices_count];
-			
-			delete normals;
-			normals_count = populated_normals.size();
-			normals = new float[normals_count];
-
-			for (unsigned int i = 0; i < vertices_count; i++)
-			{
-				vertices[i] = populated_vertices[i];
-			}
-
-			for (unsigned int i = 0; i < normals_count; i++)
-			{
-				normals[i] = populated_normals[i];
-			}
-		}
-		else
-		{
-			load_file(scenePath);
-			parse_data();
-			//populate_indices();
-		}
-
-		find_clipping_coords();
-		init_opengl_buffors();
-
-		defaultColor = new float[3]{ DEFAULT_MATERIAL.color.r, DEFAULT_MATERIAL.color.g, DEFAULT_MATERIAL.color.b };
+		DefaultColor = new float[3]{ DefaultMaterial.color.r, DefaultMaterial.color.g, DefaultMaterial.color.b };
 	}
 
 	void Draw(Shader* shader)
@@ -180,13 +90,11 @@ public:
 			{
 				shader->setMaterial(materials[parts[i]]);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
-				glDrawElements(GL_TRIANGLES, triangles_parts_count[i] * INDEX_SIZE, GL_UNSIGNED_INT, (void*)0);
-				//glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, (void*)(i*INDEX_SIZE*sizeof(unsigned int)));
-			}
+				glDrawElements(GL_TRIANGLES, triangles_parts_count[i] * INDEX_SIZE, GL_UNSIGNED_INT, (void*)0);			}
 		}
 		else
 		{
-			shader->setMaterial(DEFAULT_MATERIAL);
+			shader->setMaterial(DefaultMaterial);
 			glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, (void*)0);
 		}
 		glBindVertexArray(0);
@@ -207,7 +115,7 @@ public:
 		return cameraCenter;
 	}
 
-	glm::mat4 GetOrtho(float ratio, Side side)
+	glm::mat4 GetOrthoProjection(float ratio, Side side)
 	{
 		glm::mat2 ortho;
 		float ratioWidth = ratio;
@@ -383,17 +291,263 @@ public:
 			EBO = NULL;
 		}
 
-		if (defaultColor != NULL)
+		if (DefaultColor != NULL)
 		{
-			delete defaultColor;
-			defaultColor = NULL;
+			delete DefaultColor;
+			DefaultColor = NULL;
 		}
 
 	}
 
 private:
+	
+	//Finding clipping coords for scene
+	void findClippingCoords()
+	{
+		minCoords[0] = findMinVertexCoord(X);
+		minCoords[1] = findMinVertexCoord(Y);
+		minCoords[2] = findMinVertexCoord(Z);
 
-	void load_file(const char* scenePath)
+		maxCoords[0] = findMaxVertexCoord(X);
+		maxCoords[1] = findMaxVertexCoord(Y);
+		maxCoords[2] = findMaxVertexCoord(Z);
+
+		cameraCenter[0] = (minCoords[0] + maxCoords[0]) / 2.0f;
+		cameraCenter[1] = (minCoords[1] + maxCoords[2]) / 2.0f;
+		cameraCenter[2] = (minCoords[2] + maxCoords[2]) / 2.0f;
+	}
+
+	float findMinVertexCoord(unsigned int axis)
+	{
+		float min = vertices[axis];
+		for (int i = axis + VERTEX_SIZE; i < vertices_count; i += VERTEX_SIZE)
+		{
+			if (vertices[i] < min)
+				min = vertices[i];
+		}
+
+		return min;
+	}
+
+	float findMaxVertexCoord(unsigned int axis)
+	{
+		float max = vertices[axis];
+		for (int i = axis + VERTEX_SIZE; i < vertices_count; i += VERTEX_SIZE)
+		{
+			if (vertices[i] > max)
+				max = vertices[i];
+		}
+
+		return max;
+	}
+
+	//Initialize opengl buffors and create parts and materials if available
+	void initOpenglBuffors()
+	{
+
+		glGenBuffers(1, &VBO);
+		glGenVertexArrays(1, &mainVAO);
+
+		glBindVertexArray(mainVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, vertices_count * sizeof(float), vertices, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glGenBuffers(1, &normalsBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
+		glBufferData(GL_ARRAY_BUFFER, normals_count * sizeof(float), normals, GL_STATIC_DRAW);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+
+		if (parts_count > 0)
+		{
+			createMaterialsAndPartsIndices();
+
+			EBO = new unsigned int[parts_count];
+
+			glGenBuffers(parts_count, EBO);
+			for (unsigned int i = 0; i < parts_count; ++i)
+			{
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles_parts_count[i] * INDEX_SIZE * sizeof(unsigned int), parts_indices[i], GL_STATIC_DRAW);
+			}
+		}
+		else
+		{
+			EBO = new unsigned int;
+			glGenBuffers(1, &EBO[0]);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+
+	//Initialize materials and parts
+	void createMaterialsAndPartsIndices()
+	{
+		unsigned int* temp_indices = new unsigned int[parts_count];
+		triangles_parts_count = new unsigned int[parts_count];
+		parts_indices = new unsigned int*[parts_count];
+
+		for (unsigned int i = 0; i < parts_count; ++i)
+		{
+			temp_indices[i] = 0;
+			triangles_parts_count[i] = 0;
+		}
+
+		for (unsigned int i = 0; i < triangles_count; ++i)
+			triangles_parts_count[triangles_parts[i]] += 1;
+
+		for (unsigned int i = 0; i < parts_count; ++i)
+			parts_indices[i] = new unsigned int[triangles_parts_count[i] * INDEX_SIZE];
+
+
+		for (unsigned int i = 0; i < triangles_count; i++)
+		{
+			unsigned int part_index = triangles_parts[i];
+			parts_indices[part_index][temp_indices[part_index]] = indices[i * 3];
+			parts_indices[part_index][temp_indices[part_index] + 1] = indices[(i * 3) + 1];
+			parts_indices[part_index][temp_indices[part_index] + 2] = indices[(i * 3) + 2];
+			temp_indices[part_index] += 3;
+		}
+
+		delete temp_indices;
+	}
+
+	//Loading scene from file (.brp or .obj)
+	//--------------------------------------------------------------------------------------------------
+
+	//Load scene from file
+	void parseFromFile(std::string scenePathString)
+	{
+		if (scenePathString.substr(scenePathString.length() - 3, 3) == "obj")
+		{
+			loadObj(scenePathString.c_str(), obj_vertices, obj_normals, obj_elements, obj_normals_indices);
+			vertices_count = obj_vertices.size() * VERTEX_SIZE;
+			vertices = new float[vertices_count];
+			int count = 0;
+			for (unsigned int i = 0; i < obj_vertices.size(); i++)
+			{
+				vertices[i * 3] = obj_vertices[i].x;
+				vertices[i * 3 + 1] = obj_vertices[i].y;
+				vertices[i * 3 + 2] = obj_vertices[i].z;
+				if (vertices[i * 3] == 0 || vertices[i * 3 + 1] == 0 || vertices[i * 3 + 2] == 0)
+					count++;
+			}
+
+			indices_count = obj_elements.size();
+			indices = new unsigned int[indices_count];
+			for (unsigned int i = 0; i < obj_elements.size(); i++)
+			{
+				indices[i] = obj_elements[i] - 1;
+			}
+
+			std::vector<float> populated_vertices;
+			std::vector<float> populated_normals;
+			for (unsigned int i = 0; i < indices_count; i++)
+			{
+				populated_vertices.push_back(vertices[indices[i] * 3]);
+				populated_vertices.push_back(vertices[indices[i] * 3 + 1]);
+				populated_vertices.push_back(vertices[indices[i] * 3 + 2]);
+				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].x);
+				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].y);
+				populated_normals.push_back(obj_normals[obj_normals_indices[i] - 1].z);
+				indices[i] = i;
+			}
+
+			delete vertices;
+			vertices_count = populated_vertices.size();
+			vertices = new float[vertices_count];
+
+			delete normals;
+			normals_count = populated_normals.size();
+			normals = new float[normals_count];
+
+			for (unsigned int i = 0; i < vertices_count; i++)
+			{
+				vertices[i] = populated_vertices[i];
+			}
+
+			for (unsigned int i = 0; i < normals_count; i++)
+			{
+				normals[i] = populated_normals[i];
+			}
+		}
+		else
+		{
+			loadFile(scenePathString.c_str());
+			parseData();
+		}
+	}
+
+	//Loading .obj model from file
+	void loadObj(const char* filename, std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<unsigned int> &elements, std::vector<unsigned int> &normals_indices)
+	{
+		std::ifstream in(filename, std::ios::in);
+		if (!in)
+		{
+			std::cerr << "Cannot open " << filename << std::endl;
+		}
+
+		std::string line;
+		while (getline(in, line))
+		{
+			if (line.substr(0, 2) == "v ")
+			{
+				std::vector<std::string> lines_v = Split(line.substr(2), " ");
+				glm::vec3 v;
+				v.x = stof(lines_v[0]);
+				v.y = stof(lines_v[1]);;
+				v.z = stof(lines_v[2]);;
+				vertices.push_back(v);
+			}
+			else if (line.substr(0, 3) == "vn ")
+			{
+				std::vector<std::string> lines_v = Split(line.substr(3), " ");
+				glm::vec3 v;
+				v.x = stof(lines_v[0]);
+				v.y = stof(lines_v[1]);;
+				v.z = stof(lines_v[2]);;
+				normals.push_back(v);
+			}
+			else if (line.substr(0, 2) == "f ")
+			{
+				std::vector<std::string> lines_f = Split(line.substr(2), " ");
+				for (unsigned int i = 0; i < 3; i++)
+				{
+					std::vector<std::string> lines_e = Split(lines_f[i], "/");
+					elements.push_back(std::stoi(lines_e[0]));
+					normals_indices.push_back(std::stoi(lines_e[2]));
+				}
+				if (lines_f.size() == 4)
+				{
+					for (unsigned int i = 0; i < 4; i++)
+					{
+						if (i != 1)
+						{
+							std::vector<std::string> lines_e = Split(lines_f[i], "/");
+							elements.push_back(std::stoi(lines_e[0]));
+							normals_indices.push_back(std::stoi(lines_e[2]));
+						}
+					}
+				}
+
+			}
+			else
+			{
+				/* ignoring this line */
+			}
+
+		}
+	}
+
+	//Load file stream
+	void loadFile(const char* scenePath)
 	{
 		std::ifstream sceneFile;
 
@@ -410,13 +564,41 @@ private:
 		}
 	}
 
-	void parse_data()
+	//Parsing constant variables
+	const std::string VERTICES_HEADER = "points_count";
+	const std::string INDICES_HEADER = "triangles_count";
+	const std::string PARTS_HEADER = "parts_count";
+	const std::string MATERIALS_HEADER = "materials_count";
+	const std::string MATERIAL_NAME_HEADER = "mat_name";
+	const std::string MATERIAL_COLOR_HEADER = "rgb";
+	const std::string MESHES_INIT_HEADER = "node_count";
+	const std::string MESH_NAME_HEADER = "hier_name";
+	const std::string MESH_TRIANGLE_COUNT_HEADER = "triangle_count";
+
+	const unsigned int LOOK_FOR_VERTICES = 0;
+	const unsigned int ASSIGN_VERTICES_ARRAY = 1;
+	const unsigned int LOAD_VERTICES_ARRAY = 2;
+	const unsigned int ASSIGN_INDICES_ARRAY = 3;
+	const unsigned int LOAD_INDICES_ARRAY = 4;
+	const unsigned int ASSIGN_PARTS_ARRAY = 5;
+	const unsigned int LOAD_TRIANGLES_PARTS_ARRAY = 6;
+	const unsigned int ASSIGN_MATERIALS_ARRAY = 7;
+	const unsigned int LOAD_MATERIALS_ARRAY = 8;
+	const unsigned int LOAD_PARTS_ARRAY = 9;
+	const unsigned int ASSIGN_MESH_ARRAY = 10;
+	const unsigned int LOAD_MESH_ARRAY = 11;
+	const unsigned int ASSIGN_MESH_NAME = 12;
+	const unsigned int ASSIGN_MESH_TRIANGLES = 13;
+	const unsigned int LOAD_MESH_TRIANGLES = 14;
+
+	//Parse loaded file stream
+	void parseData()
 	{
 		unsigned int loadingState = LOOK_FOR_VERTICES;
 		unsigned int index = 0;
 		std::string line;
 		while (std::getline(sceneDataStream, line)) {
-			std::vector<std::string> words = split(line, " ");
+			std::vector<std::string> words = Split(line, " ");
 			for (unsigned int i = 0; i < words.size(); i++)
 			{
 				if (words[i].substr(0, 2) != "//")
@@ -540,124 +722,33 @@ private:
 		}
 	}
 
-	void find_clipping_coords()
+	//Optional operation on scene when object loaded
+	//-----------------------------------------------------------------------------------
+
+	//Generating separable triangles with normals (giving mesh without normals smoothing)
+	void populateIndices()
 	{
-		minCoords[0] = find_min_vertex_coord(X);
-		minCoords[1] = find_min_vertex_coord(Y);
-		minCoords[2] = find_min_vertex_coord(Z);
+		std::cout << "Before " << vertices_count << " ";
+		std::vector<float> populated_vertices;
+		for (unsigned int i = 0; i < indices_count; i++)
+		{
+			populated_vertices.push_back(vertices[indices[i] * 3]);
+			populated_vertices.push_back(vertices[indices[i] * 3 + 1]);
+			populated_vertices.push_back(vertices[indices[i] * 3 + 2]);
+			indices[i] = i;
+		}
 
-		maxCoords[0] = find_max_vertex_coord(X);
-		maxCoords[1] = find_max_vertex_coord(Y);
-		maxCoords[2] = find_max_vertex_coord(Z);
-
-		cameraCenter[0] = (minCoords[0] + maxCoords[0]) / 2.0f;
-		cameraCenter[1] = (minCoords[1] + maxCoords[2]) / 2.0f;
-		cameraCenter[2] = (minCoords[2] + maxCoords[2]) / 2.0f;
+		delete vertices;
+		vertices_count = populated_vertices.size();
+		std::cout << "after " << vertices_count << std::endl;
+		vertices = new float[vertices_count];
+		for (unsigned int i = 0; i < vertices_count; i++)
+		{
+			vertices[i] = populated_vertices[i];
+		}
 	}
 
-	float find_min_vertex_coord(unsigned int axis)
-	{
-		float min = vertices[axis];
-		for (int i = axis + VERTEX_SIZE; i < vertices_count; i += VERTEX_SIZE)
-		{
-			if (vertices[i] < min)
-				min = vertices[i];
-		}
-
-		return min;
-	}
-
-	float find_max_vertex_coord(unsigned int axis)
-	{
-		float max = vertices[axis];
-		for (int i = axis + VERTEX_SIZE; i < vertices_count; i += VERTEX_SIZE)
-		{
-			if (vertices[i] > max)
-				max = vertices[i];
-		}
-
-		return max;
-	}
-
-	void init_opengl_buffors()
-	{
-		
-		glGenBuffers(1, &VBO);
-		glGenVertexArrays(1, &mainVAO);
-
-		glBindVertexArray(mainVAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, vertices_count * sizeof(float), vertices, GL_STATIC_DRAW);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
-
-		if (modifier == 1) //It's not an object file
-			calculateNormalsWithoutMeshes();
-		
-		glGenBuffers(1, &normalsBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
-		glBufferData(GL_ARRAY_BUFFER, normals_count * sizeof(float), normals, GL_STATIC_DRAW);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-
-		if (parts_count > 0)
-		{
-			createMaterialsAndPartsIndices();
-
-			EBO = new unsigned int[parts_count];
-
-			glGenBuffers(parts_count, EBO);
-			for (unsigned int i = 0; i < parts_count; ++i)
-			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles_parts_count[i] * INDEX_SIZE * sizeof(unsigned int), parts_indices[i], GL_STATIC_DRAW);
-			}
-		}
-		else
-		{
-			EBO = new unsigned int;
-			glGenBuffers(1, &EBO[0]);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
-		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-	}
-
-	void createMaterialsAndPartsIndices()
-	{
-		unsigned int* temp_indices = new unsigned int[parts_count];
-		triangles_parts_count = new unsigned int[parts_count];
-		parts_indices = new unsigned int*[parts_count];
-
-		for (unsigned int i = 0; i < parts_count; ++i)
-		{
-			temp_indices[i] = 0;
-			triangles_parts_count[i] = 0;
-		}
-
-		for (unsigned int i = 0; i < triangles_count; ++i)
-			triangles_parts_count[triangles_parts[i]] += 1;
-
-		for (unsigned int i = 0; i < parts_count; ++i)
-			parts_indices[i] = new unsigned int[triangles_parts_count[i] * INDEX_SIZE];
-
-
-		for (unsigned int i = 0; i < triangles_count; i++)
-		{
-			unsigned int part_index = triangles_parts[i];
-			parts_indices[part_index][temp_indices[part_index]] = indices[i * 3];
-			parts_indices[part_index][temp_indices[part_index] + 1] = indices[(i * 3) + 1];
-			parts_indices[part_index][temp_indices[part_index] + 2] = indices[(i * 3) + 2];
-			temp_indices[part_index] += 3;
-		}
-
-		delete temp_indices;
-	}
-
+	//Automatic calculating normals based on triangles
 	void calculateNormalsWithoutMeshes()
 	{
 		glm::vec3* triangles_normals = new glm::vec3[triangles_count];
@@ -740,7 +831,7 @@ private:
 					else
 						weight = (glm::pi<float>() - glm::asin(glm::length(glm::cross(e1, e2)) / (glm::length(e1) * glm::length(e2))));
 
-					tempNormal += weight * modifier * triangles_normals[k];
+					tempNormal += weight * triangles_normals[k];
 				}
 			}
 			tempNormal = glm::normalize(tempNormal);
@@ -750,85 +841,7 @@ private:
 		}
 	}
 
-	void load_obj(const char* filename, std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &normals, std::vector<unsigned int> &elements, std::vector<unsigned int> &normals_indices)
-	{
-		std::ifstream in(filename, std::ios::in);
-		if (!in)
-		{
-			std::cerr << "Cannot open " << filename << std::endl;
-		}
+	//-----------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------------------------
 
-		std::string line;
-		while (getline(in, line))
-		{
-				if (line.substr(0, 2) == "v ")
-				{
-					std::vector<std::string> lines_v = split(line.substr(2), " ");
-					glm::vec3 v; 
-					v.x = stof(lines_v[0]);
-					v.y = stof(lines_v[1]);;
-					v.z = stof(lines_v[2]);;
-					vertices.push_back(v);
-				}
-				else if (line.substr(0, 3) == "vn ")
-				{
-					std::vector<std::string> lines_v = split(line.substr(3), " ");
-					glm::vec3 v;
-					v.x = stof(lines_v[0]);
-					v.y = stof(lines_v[1]);;
-					v.z = stof(lines_v[2]);;
-					normals.push_back(v);
-				}
-				else if (line.substr(0, 2) == "f ")
-				{
-					std::vector<std::string> lines_f = split(line.substr(2), " ");
-					for (unsigned int i = 0; i < 3; i++)
-					{
-						std::vector<std::string> lines_e = split(lines_f[i], "/");
-						elements.push_back(std::stoi(lines_e[0]));
-						normals_indices.push_back(std::stoi(lines_e[2]));
-					}
-					if (lines_f.size() == 4)
-					{
-						for (unsigned int i = 0; i < 4; i++)
-						{
-							if (i != 1)
-							{
-								std::vector<std::string> lines_e = split(lines_f[i], "/");
-								elements.push_back(std::stoi(lines_e[0]));
-								normals_indices.push_back(std::stoi(lines_e[2]));
-							}
-						}
-					}
-
-				}
-				else
-				{
-					/* ignoring this line */
-				}
-
-		}
-	}
-
-	void populate_indices()
-	{
-		std::cout << "Before " << vertices_count << " ";
-		std::vector<float> populated_vertices;
-		for (unsigned int i = 0; i < indices_count; i++)
-		{
-			populated_vertices.push_back(vertices[indices[i] * 3]);
-			populated_vertices.push_back(vertices[indices[i] * 3 + 1]);
-			populated_vertices.push_back(vertices[indices[i] * 3 + 2]);
-			indices[i] = i;
-		}
-
-		delete vertices;
-		vertices_count = populated_vertices.size();
-		std::cout << "after " << vertices_count << std::endl;
-		vertices = new float[vertices_count];
-		for (unsigned int i=0; i < vertices_count; i++)
-		{
-			vertices[i] = populated_vertices[i];
-		}
-	}
 };

@@ -26,13 +26,12 @@ public:
 	// Constructor with file parser
 	TPPcamera(const char* cameraPath, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f))
 	{
-		loadPath = cameraPath;
 		WorldUp = up;
 
 		MovementSpeed = SPEED;
 		MouseSensitivity = SENSITIVITY;
 
-		loadParametersFromFile();
+		loadParametersFromFile(cameraPath);
 		calculateStartPitchAndAngle();
 		updateCameraVectors();
 	}
@@ -144,8 +143,10 @@ public:
 
 private:
 
-	void loadParametersFromFile()
+	void loadParametersFromFile(const char* path)
 	{
+		loadPath = path;
+
 		std::ifstream cameraFile;
 		std::stringstream cameraDataStream;
 
@@ -164,12 +165,12 @@ private:
 
 		std::string line;
 		std::getline(cameraDataStream, line);
-		std::vector<std::string> pos = split(line, " ");
+		std::vector<std::string> pos = Split(line, " ");
 
 		glm::vec3 camPos = glm::vec3(stof(pos[0]), stof(pos[1]), stof(pos[2]));
 
 		std::getline(cameraDataStream, line);
-		pos = split(line, " ");
+		pos = Split(line, " ");
 		glm::vec3 camCenter = glm::vec3(stof(pos[0]), stof(pos[1]), stof(pos[2]));
 
 		std::getline(cameraDataStream, line);

@@ -33,37 +33,37 @@ const float RATIO = (float)WIDTH / (float)HEIGHT;
 int main();
 
 //Initialize
-void init_glfw();
-void init_window();
-void init_glad();
-void config_openGL();
-void init_imgui();
-void draw_UI();
-void draw_file_chooser();
-void load_shaders();
-void load_scene();
+void initGLFW();
+void initWindow();
+void initGLAD();
+void configOpenGL();
+void initImGUI();
+void drawUI();
+void drawFileChooser();
+void loadShaders();
+void loadScene();
 void dispose();
-void init_camera_frustum_buffers();
-void update_frustum_points();
+void initCameraFrustumBuffers();
+void updateFrustumPoints();
 
 //Core loop
-void core_loop();
-void update_time();
-void process_input(GLFWwindow* window);
-void draw_perspective_view();
-void draw_ortho(Scene::Side side);
-void draw_frustum(glm::mat4 model, glm::mat4 view, glm::mat4 projection);
+void coreLoop();
+void updateTime();
+void processInput(GLFWwindow* window);
+void drawPerspectiveView();
+void drawOrtho(Scene::Side side);
+void drawFrustum(glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
 //Callbacks and listeners
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void mouseCallback(GLFWwindow* window, double xpos, double ypos);
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 //Mouse callback variables
 bool firstMouse = true;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
-unsigned int last_rmb_state = GLFW_RELEASE;
+unsigned int lastRmbState = GLFW_RELEASE;
 
 //Time variables
 float deltaTime = 0.0f;
