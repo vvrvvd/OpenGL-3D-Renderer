@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\Dell\Documents\OpenGL\Include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Dell\Documents\OpenGL\Include;C:\Users\Dell\Documents\OpenGL-3D-Renderer\OpenGL First\source;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\Dell\Documents\OpenGL\Libraries;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,37 +130,34 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />
-    <ClCompile Include="imgui.cpp" />
-    <ClCompile Include="ImGuiFileDialog.cpp" />
-    <ClCompile Include="imgui_demo.cpp" />
-    <ClCompile Include="imgui_draw.cpp" />
-    <ClCompile Include="imgui_impl_glfw.cpp" />
-    <ClCompile Include="imgui_impl_opengl3.cpp" />
-    <ClCompile Include="imgui_widgets.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\ImGuiFileDialog.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\OpenGL\Include\nanovg\stb_image.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Config.h" />
-    <ClInclude Include="FPScamera.h" />
-    <ClInclude Include="image_loader.h" />
-    <ClInclude Include="imconfig.h" />
-    <ClInclude Include="imgui.h" />
-    <ClInclude Include="ImGuiFileDialog.h" />
-    <ClInclude Include="imgui_impl_glfw.h" />
-    <ClInclude Include="imgui_impl_opengl3.h" />
-    <ClInclude Include="imgui_internal.h" />
-    <ClInclude Include="imstb_rectpack.h" />
-    <ClInclude Include="imstb_textedit.h" />
-    <ClInclude Include="imstb_truetype.h" />
-    <ClInclude Include="Light.h" />
+    <ClInclude Include="Config\CameraConfig.h" />
+    <ClInclude Include="headers\imgui\imconfig.h" />
+    <ClInclude Include="Headers\imgui\imgui.h" />
+    <ClInclude Include="headers\imgui\ImGuiFileDialog.h" />
+    <ClInclude Include="headers\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="headers\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="headers\imgui\imgui_internal.h" />
+    <ClInclude Include="headers\imgui\imstb_rectpack.h" />
+    <ClInclude Include="headers\imgui\imstb_textedit.h" />
+    <ClInclude Include="headers\imgui\imstb_truetype.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="Quad.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="string_utils.h" />
-    <ClInclude Include="TPPcamera.h" />
+    <ClInclude Include="Scene\Camera.h" />
+    <ClInclude Include="Scene\FPScamera.h" />
+    <ClInclude Include="Scene\Light.h" />
+    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\TPPcamera.h" />
+    <ClInclude Include="utils\MatrixUtils.h" />
+    <ClInclude Include="Utils\Shader.h" />
+    <ClInclude Include="utils\StringUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

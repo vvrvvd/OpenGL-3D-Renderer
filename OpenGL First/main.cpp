@@ -158,14 +158,14 @@ void draw_UI()
 
 				if (ImGui::InputFloat3("Position", lightPos))
 				{
-					scene->lightPos = glm::vec3(lightPos[0], lightPos[1], lightPos[2]);
-					light->position = scene->lightPos;
+					scene->LightPos = glm::vec3(lightPos[0], lightPos[1], lightPos[2]);
+					light->position = scene->LightPos;
 				}
 
 				if (ImGui::ColorPicker3("Color", lightColor))
 				{
-					scene->lightColor = glm::vec3(lightColor[0], lightColor[1], lightColor[2]);
-					light->color = scene->lightColor;
+					scene->LightColor = glm::vec3(lightColor[0], lightColor[1], lightColor[2]);
+					light->color = scene->LightColor;
 				}
 				
 			}
@@ -219,7 +219,7 @@ void draw_file_chooser()
 			filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
 			path = ImGuiFileDialog::Instance()->GetCurrentPath();
 			fileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
-			cameraPath = fileName.substr(0, fileName.length() - 3).append("cam");
+			cameraPath = path + "//" + fileName.substr(0, fileName.length() - 3).append("cam");
 			filter = ImGuiFileDialog::Instance()->GetCurrentFilter();
 
 			if (openSceneFileDialog)
@@ -231,12 +231,12 @@ void draw_file_chooser()
 				cameraPosition[0] = tppCamera->Position.x;
 				cameraPosition[1] = tppCamera->Position.y;
 				cameraPosition[2] = tppCamera->Position.z;
-				lightPos[0] = scene->lightPos[0];
-				lightPos[1] = scene->lightPos[1];
-				lightPos[2] = scene->lightPos[2];
-				lightColor[0] = scene->lightColor[0];
-				lightColor[1] = scene->lightColor[1];
-				lightColor[2] = scene->lightColor[2];
+				lightPos[0] = scene->LightPos[0];
+				lightPos[1] = scene->LightPos[1];
+				lightPos[2] = scene->LightPos[2];
+				lightColor[0] = scene->LightColor[0];
+				lightColor[1] = scene->LightColor[1];
+				lightColor[2] = scene->LightColor[2];
 			}
 		}
 		else
@@ -254,10 +254,10 @@ void draw_file_chooser()
 
 void load_shaders()
 {
-	phongShader = new Shader("vertexTexturePhong.vert", "fragmentTexturePhong.frag");
-	gouraudShader = new Shader("vertexTextureGouraud.vert", "fragmentTextureGouraud.frag");
+	phongShader = new Shader("shaders/vertexTexturePhong.vert", "shaders/fragmentTexturePhong.frag");
+	gouraudShader = new Shader("shaders/vertexTextureGouraud.vert", "shaders/fragmentTextureGouraud.frag");
 	sceneShader = gouraudShader;
-	frustumShader = new Shader("frustum.vert","frustum.frag");
+	frustumShader = new Shader("shaders/frustum.vert","shaders/frustum.frag");
 }
 
 void load_scene()
@@ -271,9 +271,9 @@ void load_scene()
 	if (light != NULL)
 		delete light;
 
-	scene = new Scene(fileName.c_str());
+	scene = new Scene(filePathName.c_str());
 	tppCamera = new TPPcamera(cameraPath.c_str());
-	light = new Light(scene->lightPos, scene->lightColor, LIGHT_SCALE, "light.vert", "light.frag");
+	light = new Light(scene->LightPos, scene->LightColor, LIGHT_SCALE, "shaders/light.vert", "shaders/light.frag");
 	camera = tppCamera;
 }
 

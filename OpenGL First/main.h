@@ -1,5 +1,31 @@
-#include "Config.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
+#include "Config/CameraConfig.h"
+
+#include "Utils/Shader.h"
+#include "Utils/MatrixUtils.h"
+
+#include "Scene/Scene.h"
+#include "Scene/Light.h"
+#include "Scene/TPPcamera.h"
+#include "Scene/FPScamera.h"
+
+#include "Imgui/imgui.h"
+#include "Imgui/imgui_impl_glfw.h"
+#include "Imgui/imgui_impl_opengl3.h"
+#include "Imgui/ImGuiFileDialog.h"
+
+unsigned int WIDTH = 800;
+unsigned int HEIGHT = 600;
+
+TPPcamera* tppCamera;
+FPScamera* fpsCamera;
+Camera* camera;
 
 //Constants
 const float RATIO = (float)WIDTH / (float)HEIGHT;

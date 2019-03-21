@@ -13,114 +13,105 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Pliki nagłówkowe\utils">
-      <UniqueIdentifier>{b780b361-80f4-409b-9bad-89f26439b944}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Pliki nagłówkowe\main">
-      <UniqueIdentifier>{67b795dc-2ade-4383-a632-8f7d501c074b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Pliki nagłówkowe\Objects">
-      <UniqueIdentifier>{c8efcdca-af27-40d9-8510-d57a63a21525}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Pliki nagłówkowe\imgui">
-      <UniqueIdentifier>{773a6b53-0bfa-44b2-9486-93ddedbd26a1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Pliki źródłowe\imgui">
       <UniqueIdentifier>{1c876761-0563-4e36-b745-e2f2f5be9978}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki nagłówkowe\Scene">
+      <UniqueIdentifier>{c8efcdca-af27-40d9-8510-d57a63a21525}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki nagłówkowe\Config">
+      <UniqueIdentifier>{6819ce5a-4e8c-4faa-8b02-9c43d155190a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki nagłówkowe\Utils">
+      <UniqueIdentifier>{b780b361-80f4-409b-9bad-89f26439b944}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki nagłówkowe\Imgui">
+      <UniqueIdentifier>{773a6b53-0bfa-44b2-9486-93ddedbd26a1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>Pliki źródłowe\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>Pliki źródłowe\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_glfw.cpp">
+      <Filter>Pliki źródłowe\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
+      <Filter>Pliki źródłowe\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>Pliki źródłowe\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\ImGuiFileDialog.cpp">
+      <Filter>Pliki źródłowe\imgui</Filter>
+    </ClCompile>
     <ClCompile Include="glad.c">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="imgui.cpp">
-      <Filter>Pliki źródłowe\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_demo.cpp">
-      <Filter>Pliki źródłowe\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_draw.cpp">
-      <Filter>Pliki źródłowe\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_impl_glfw.cpp">
-      <Filter>Pliki źródłowe\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_widgets.cpp">
-      <Filter>Pliki źródłowe\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_impl_opengl3.cpp">
-      <Filter>Pliki źródłowe\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGuiFileDialog.cpp">
-      <Filter>Pliki źródłowe\imgui</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="image_loader.h">
-      <Filter>Pliki nagłówkowe\utils</Filter>
+    <ClInclude Include="Headers\imgui\imgui.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Pliki nagłówkowe\utils</Filter>
+    <ClInclude Include="headers\imgui\imconfig.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\OpenGL\Include\nanovg\stb_image.h">
-      <Filter>Pliki nagłówkowe\utils</Filter>
+    <ClInclude Include="headers\imgui\imgui_impl_glfw.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="string_utils.h">
-      <Filter>Pliki nagłówkowe\utils</Filter>
+    <ClInclude Include="headers\imgui\imgui_impl_opengl3.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\imgui\imgui_internal.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\imgui\ImGuiFileDialog.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\imgui\imstb_rectpack.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\imgui\imstb_textedit.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\imgui\imstb_truetype.h">
+      <Filter>Pliki nagłówkowe\Imgui</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
-      <Filter>Pliki nagłówkowe\main</Filter>
+      <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="Config.h">
-      <Filter>Pliki nagłówkowe\main</Filter>
+    <ClInclude Include="Scene\Camera.h">
+      <Filter>Pliki nagłówkowe\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Quad.h">
-      <Filter>Pliki nagłówkowe\Objects</Filter>
+    <ClInclude Include="Scene\FPScamera.h">
+      <Filter>Pliki nagłówkowe\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Pliki nagłówkowe\Objects</Filter>
+    <ClInclude Include="Scene\Light.h">
+      <Filter>Pliki nagłówkowe\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Pliki nagłówkowe\Objects</Filter>
+    <ClInclude Include="Scene\Scene.h">
+      <Filter>Pliki nagłówkowe\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="FPScamera.h">
-      <Filter>Pliki nagłówkowe\Objects</Filter>
+    <ClInclude Include="Config\CameraConfig.h">
+      <Filter>Pliki nagłówkowe\Config</Filter>
     </ClInclude>
-    <ClInclude Include="imconfig.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
+    <ClInclude Include="Scene\TPPcamera.h">
+      <Filter>Pliki nagłówkowe\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="imgui.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
+    <ClInclude Include="utils\MatrixUtils.h">
+      <Filter>Pliki nagłówkowe\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_impl_glfw.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
+    <ClInclude Include="Utils\Shader.h">
+      <Filter>Pliki nagłówkowe\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_internal.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imstb_rectpack.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imstb_textedit.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imstb_truetype.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_impl_opengl3.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGuiFileDialog.h">
-      <Filter>Pliki nagłówkowe\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="TPPcamera.h">
-      <Filter>Pliki nagłówkowe\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Pliki nagłówkowe\Objects</Filter>
+    <ClInclude Include="utils\StringUtils.h">
+      <Filter>Pliki nagłówkowe\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
